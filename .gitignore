@@ -1,0 +1,54 @@
+# Python-related
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+.env
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Project-specific
+*.log
+*.mp3
+transcription_result.json
+transcription.txt
+transcription2.txt
+
+# Dependency management
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+.coverage
+
+# API keys and secrets
+config/config.py
+
+# Markdown documentation (optional, depending on whether you want to version these)
+# *.md
+
+# Groq-specific (if any)
+.groq/
+
+recordings/
+
+# mp3 and wav files
+*.mp3
+*.wav

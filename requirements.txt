@@ -1,0 +1,6 @@
+requests
+ffmpeg-python
+python-dotenv
+groq
+pyaudio
+keyboard
