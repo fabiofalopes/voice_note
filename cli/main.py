@@ -28,7 +28,11 @@ def main():
     args = parser.parse_args()
 
     recorder = AudioRecorder()
-
+    print("----------------------------------------")
+    print("Available input devices:")
+    recorder.list_input_devices()
+    print("----------------------------------------")
+    
     if args.list_devices:
         recorder.list_input_devices()
         return
