@@ -26,7 +26,7 @@ class GroqWhisperAPI:
     def transcribe_audio(
         self,
         file_path: str,
-        model_id: str = SELECTED_MODEL,
+        model_id: Optional[str] = None,
         prompt: Optional[str] = None,
         response_format: str = 'json',
         language: Optional[str] = None,
@@ -35,6 +35,7 @@ class GroqWhisperAPI:
         product_names: Optional[List[str]] = None
     ) -> Union[dict, str]:
         try:
+            model_id = model_id or self.SELECTED_MODEL
             file_size = os.path.getsize(file_path)
             if file_size > 25 * 1024 * 1024:  # 25 MB
                 chunks = split_audio(file_path)
@@ -72,6 +73,7 @@ class GroqWhisperAPI:
             summary = self.analyzer.summarize_text(full_transcription)
             sentiment = self.analyzer.analyze_sentiment(full_transcription)
             task_analysis = self.analyzer.extract_task_requirements(full_transcription)
+            
             return {
                 "model": model_id,
                 "text": full_transcription,

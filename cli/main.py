@@ -2,12 +2,12 @@ import argparse
 import os
 import sys
 import json
-from api_integrations.router import APIRouter
 
 # Add the project root to the Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
+from api_integrations.router import APIRouter
 from api_integrations.groq_whisper import GroqWhisperAPI
 from audio_processing.preprocess import preprocess_audio
 from audio_processing.recorder import AudioRecorder
@@ -20,7 +20,6 @@ def main():
     parser.add_argument('--record-until-q', action='store_true', help='Record audio until Ctrl+C is pressed')
     parser.add_argument('--list-devices', action='store_true', help='List available input devices')
     parser.add_argument('--input-device', type=int, help='Input device index to use for recording')
-    parser.add_argument('--model', type=str, default='whisper-large-v3', help='Transcription model ID.')
     parser.add_argument('--prompt', type=str, help='Prompt for transcription')
     parser.add_argument('--language', type=str, help='Language of the audio')
     parser.add_argument('--temperature', type=float, help='Temperature for transcription')
@@ -28,7 +27,8 @@ def main():
     parser.add_argument('--list-models', action='store_true', help='List available models for each API')
     parser.add_argument('--transcribe', action='store_true', help='Transcribe the audio')
     parser.add_argument('--translate', action='store_true', help='Translate the audio')
-    parser.add_argument('--api', help='Specify the API to use (default: groq)')
+    parser.add_argument('--api', type=str, default='groq', help='Specify the API to use')
+    parser.add_argument('--model', type=str, help='Transcription model ID (if not specified, API default will be used)')
     parser.add_argument('file_path', type=str, nargs='?', help='Path to save the audio file or existing audio file.')
 
     args = parser.parse_args()
@@ -127,6 +127,10 @@ def main():
 
     # Clean up preprocessed file
     os.remove(preprocessed_file)
+
+    if args.api == 'local' and 'local' not in router.apis:
+        print("Error: Local API is not available. Make sure whisper is installed.")
+        return
 
 if __name__ == "__main__":
     main()
