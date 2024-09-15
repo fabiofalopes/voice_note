@@ -1,3 +1,8 @@
+# Voice Notes 
+
+[Whisper](https://github.com/openai/whisper)
+[Groq](https://console.groq.com/docs/speech-text)
+
 ## Installation
 
 To set up this project, follow these steps:
