@@ -8,13 +8,15 @@ from pydub import AudioSegment
 from post_processing.analyzer import TextAnalyzer  # Changed to absolute import
 
 class GroqWhisperAPI:
-    """
-    A class to interact with the Groq Whisper API for audio transcription and translation.
+    models = [
+        "whisper-large-v3",
+        "distil-whisper-large-v3-en"
+    ]
 
-    Supports audio file formats: mp3, mp4, mpeg, mpga, m4a, wav, and webm.
-    Maximum file size: 25 MB.
-    """
+    SELECTED_MODEL = models[0]
+
     def __init__(self):
+        self.selected_model = self.models[0]
         if not GROQ_API_KEY:
             raise ValueError("GROQ_API_KEY is not set in environment variables.")
         os.environ['GROQ_API_KEY'] = GROQ_API_KEY
@@ -24,7 +26,7 @@ class GroqWhisperAPI:
     def transcribe_audio(
         self,
         file_path: str,
-        model_id: str = 'whisper-large-v3',
+        model_id: str = SELECTED_MODEL,
         prompt: Optional[str] = None,
         response_format: str = 'json',
         language: Optional[str] = None,
@@ -64,16 +66,18 @@ class GroqWhisperAPI:
                 full_transcription = transcription.text if response_format != 'json' else transcription.to_dict()['text']
 
             if product_names:
-                full_transcription = post_process_transcript(full_transcription, product_names)
+                full_transcription = TextAnalyzer.post_process_transcript(full_transcription, product_names)
             
             # Post-Processing: Summarization and Sentiment Analysis
             summary = self.analyzer.summarize_text(full_transcription)
             sentiment = self.analyzer.analyze_sentiment(full_transcription)
-
+            task_analysis = self.analyzer.extract_task_requirements(full_transcription)
             return {
+                "model": model_id,
                 "text": full_transcription,
                 "summary": summary,
-                "sentiment_analysis": sentiment
+                "sentiment_analysis": sentiment,
+                "task_analysis": task_analysis,
             } if response_format == 'json' else full_transcription
 
         except Exception as e:
@@ -84,7 +88,7 @@ class GroqWhisperAPI:
     def translate_audio(
         self,
         file_path: str,
-        model_id: str = 'whisper-large-v3',
+        model_id: str = SELECTED_MODEL,
         prompt: Optional[str] = None,
         response_format: str = 'json',
         language: Optional[str] = None,

@@ -48,6 +48,7 @@ config/config.py
 .groq/
 
 recordings/
+outputs/
 
 # mp3 and wav files
 *.mp3

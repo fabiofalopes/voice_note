@@ -5,15 +5,15 @@ from config.config import GROQ_API_KEY
 import json  # Add this import at the top of the file
 
 models = [
-    "gemma-7b-it",
-    "gemma2-9b-it",
-    "llama-3.1-8b-instant",
-    "llama-3.1-70b-versatile",
-    "mixtral-8x7b-32768",
-    "llama3-groq-8b-8192-tool-use-preview",
-    "llama3-groq-70b-8192-tool-use-preview",
-    "llama3-8b-8192",
-    "llama3-70b-8192",
+    "gemma-7b-it", # 0
+    "gemma2-9b-it", # 1
+    "llama-3.1-8b-instant", # 2
+    "llama-3.1-70b-versatile", # 3
+    "mixtral-8x7b-32768", # 4
+    "llama3-groq-8b-8192-tool-use-preview", # 5
+    "llama3-groq-70b-8192-tool-use-preview", # 6
+    "llama3-8b-8192", # 7
+    "llama3-70b-8192", # 8
 ]
 
 MODEL = models[3]
@@ -97,4 +97,41 @@ class TextAnalyzer:
             return {"error": "Failed to parse sentiment analysis result"}
         except Exception as e:
             print(f"An error occurred during sentiment analysis: {e}")
+            return {"error": str(e)}
+
+    def extract_task_requirements(self, text: str) -> Dict[str, Any]:
+        """
+        Extract tasks, requirements, and steps from the provided text.
+
+        :param text: The text to analyze.
+        :return: A dictionary containing structured task information.
+        """
+        try:
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are an expert task analyzer. Given an input, extract the main task, requirements, steps, and any additional components needed to achieve the objective. Provide a structured response in JSON format."
+                },
+                {"role": "user", "content": f"Analyze the following text and extract task information:\n\n{text}"}
+            ]
+
+            response = self.client.chat.completions.create(
+                messages=messages,
+                model=MODEL,
+                temperature=0.2,
+                max_tokens=1000,
+                top_p=1,
+                stop=None,
+                stream=False,
+                response_format={"type": "json_object"}
+            )
+
+            task_data = json.loads(response.choices[0].message.content)
+            return task_data
+
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+            return {"error": "Failed to parse task analysis result"}
+        except Exception as e:
+            print(f"An error occurred during task analysis: {e}")
             return {"error": str(e)}
