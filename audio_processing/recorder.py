@@ -2,6 +2,7 @@ import pyaudio
 import wave
 import os
 import threading
+from config.config import AUDIO_CONFIG
 
 class AudioRecorder:
     def __init__(self, output_directory='recordings'):
@@ -10,6 +11,7 @@ class AudioRecorder:
         self.channels = 1
         self.rate = 44100
         self.output_directory = output_directory
+        self.input_device_index = AUDIO_CONFIG.get('input_device_index')
         
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
