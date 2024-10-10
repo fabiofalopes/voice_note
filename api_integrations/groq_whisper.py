@@ -38,7 +38,7 @@ class GroqWhisperAPI:
             model_id = model_id or self.SELECTED_MODEL
             file_size = os.path.getsize(file_path)
             if file_size > 25 * 1024 * 1024:  # 25 MB
-                chunks = split_audio(file_path)
+                chunks = _split_audio(file_path)
                 transcriptions = []
                 for chunk in chunks:
                     with open(chunk, "rb") as file:
@@ -115,7 +115,7 @@ class GroqWhisperAPI:
             traceback.print_exc()  # Print the full traceback for detailed debugging
             return {"error": str(e)}
 
-def split_audio(file_path: str, chunk_duration: int = 10 * 60 * 1000) -> List[str]:
+def _split_audio(file_path: str, chunk_duration: int = 10 * 60 * 1000) -> List[str]:
     """
     Split a large audio file into smaller chunks.
     

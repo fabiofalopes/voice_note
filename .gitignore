@@ -39,7 +39,7 @@ dist/
 .coverage
 
 # API keys and secrets
-config/config.py
+# config/config.py
 
 # Markdown documentation (optional, depending on whether you want to version these)
 # *.md
