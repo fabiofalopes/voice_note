@@ -1,0 +1,74 @@
+{
+  "faster-tiny": {
+    "model_name": "faster-tiny",
+    "load_time_seconds": 0.670712947845459,
+    "transcribe_time_seconds": 12.10327696800232,
+    "total_time_seconds": 12.773989915847778,
+    "memory_usage_bytes": 798605312.0,
+    "peak_memory_bytes": 798605312.0,
+    "words_per_second": 0.6609780162141017,
+    "word_count": 8,
+    "sample_text": " \u0395\u03b3\u03ce, \u039c\u03b1\u03bd\u03af\u03b4\u03bf \u03c4\u03cc \u03ba\u03af\u03c1\u03b5\u03c4\u03b5, \u03c3\u03c4\u03b1 \u03b1\u0440\u0435\u03c4\u03bf\u03b9\u03ba\u03ae \u03c5\u03c4\u03c1\u03af beloved!",
+    "real_time_factor": 0.8208394010174513
+  },
+  "faster-base": {
+    "model_name": "faster-base",
+    "load_time_seconds": 0.35711073875427246,
+    "transcribe_time_seconds": 6.497822284698486,
+    "total_time_seconds": 6.854933023452759,
+    "memory_usage_bytes": 997572608.0,
+    "peak_memory_bytes": 997572608.0,
+    "words_per_second": 2.308465720172591,
+    "word_count": 15,
+    "sample_text": " \u03b7\u043d\u043e\u043f\u03c1\u03cc\u03bd\u03bf, \u03bc\u03b9\u03cc \u03bc\u03b1\u03c2 \u03c0\u03c1\u03ad\u03c0\u03b5\u03b9 \u03bd\u03b1 \u03b4\u03bf\u03c3\u03b9\u03ba\u03ac \u03c3platz\u03bf\u03cd\u03bd, \u03c3\u03c7\u03ad\u03c1\u03b5\u03c0\u03b5 trying to fit to any ombre right.",
+    "real_time_factor": 0.44067970733797807
+  },
+  "faster-small": {
+    "model_name": "faster-small",
+    "load_time_seconds": 0.5508778095245361,
+    "transcribe_time_seconds": 6.978264093399048,
+    "total_time_seconds": 7.529141902923584,
+    "memory_usage_bytes": 1279737856.0,
+    "peak_memory_bytes": 1279737856.0,
+    "words_per_second": 4.87227189239823,
+    "word_count": 34,
+    "sample_text": " \u039a\u03b1\u03b9 \u03b4\u03b5\u03c3\u03c4\u03ac\u03ba\u03b1\u03bd\u03b5 \u03c3\u03c4\u03bf 9, \u03c4\u03b1iba \u03c4\u03bf\u03bd \u03ba\u03cd\u03c1\u03b9\u03c4\u03bf\u03c2 \u03b5\u03bd\u03ce \u03b1\u03c5\u03c4\u03cc \u03b3\u03c4\u03af\u97d3\u03bd\u03b1.  \u03a0\u03ac\u03c3\u03b1\u03b9 \u03c3\u03cd\u03ba\u03c1\u03b1\u03b4\u03bf \u03c3\u03c9\u03ad\u03c4\u03c1\u03b1 \u03c4\u03bf\u03bd \u03ba\u03cd\u03c1\u03b9\u03bf \u03c4\u03bf\u03c5 \u03b1\u03bd\u03b8\u03c1\u03c9\u03c0\u03bf\u03b9 \u03ba\u03ac\u03bd\u03c9.  \u039ahhh!  \u03a4\u03ce\u03c1\u03b1 \u03c3\u03c9\u03ad\u03c4\u03c1\u03b1 \u03c3\u03c1\u03b1\u03c4\u03c1\u03b1\u03c3\u03c3\u03b7 \u03ba\u03b1\u03b9 \u03c1\u03c5\u03c3\u03c4\u03b7\u03bc\u03b1\u03c1",
+    "real_time_factor": 0.47326307856215993
+  },
+  "faster-medium": {
+    "model_name": "faster-medium",
+    "load_time_seconds": 1.1845099925994873,
+    "transcribe_time_seconds": 7.198595285415649,
+    "total_time_seconds": 8.383105278015137,
+    "memory_usage_bytes": 2402762752.0,
+    "peak_memory_bytes": 2402762752.0,
+    "words_per_second": 1.805907886825919,
+    "word_count": 13,
+    "sample_text": " \u03cc\u03bc\u03c9\u03c2main \u03c4\u03bf \u03ba\u03bf\u03b9\u3083 \u03c4\u03b5\u03c3\u03c4\u03acroot \u03ba\u03bf\u03b9 conseguir respiratory \u03c4\u03bf \u03ba\u03bf\u03b9\u3083 \u03c4\u03b5\u03c3\u03c4\u03ac\u03c1\u03bf\u03c5  \u03c4\u03bf \u03ba\u03bf\u03b9\u3083 \u03c4\u03b5\u03c3\u03c4\u03ac\u03c1\u03bf\u03c5",
+    "real_time_factor": 0.4882058518423635
+  },
+  "faster-large-v2": {
+    "model_name": "faster-large-v2",
+    "load_time_seconds": 2.413027048110962,
+    "transcribe_time_seconds": 7.245159864425659,
+    "total_time_seconds": 9.658186912536621,
+    "memory_usage_bytes": 2399731712.0,
+    "peak_memory_bytes": 2399731712.0,
+    "words_per_second": 1.794301332649827,
+    "word_count": 13,
+    "sample_text": " \u038c\u03bc\u03cc\u03c3\u03bf \u039d\u03b7\u03b3 tard \u03cc\u03c4\u03b9 \u03c0\u03ac\u03c1\u03b5\u03b9 \u03c4\u03bf\u03bd \u03ba\u03bf\u03b9\u03b5\u03c4\u03c3\u03c4\u03ac\u03c1\u03b1 \u03c3\u03c4\u03bf \u03ba\u03bf\u03b9\u03b5\u03c4\u03c3\u03c4\u03ac\u03c1\u03b1.  \u0391\u03c5\u03c4\u03cc \u03ba\u03bf\u03b9\u03b5\u03c4\u03c3\u03c4\u03ac\u03c1\u03b1, \u03c4\u03bf \u03ba\u03bf\u03b9\u03b5\u03c4\u03c3\u03c4\u03ac\u03c1\u03b1.",
+    "real_time_factor": 0.4913638429586748
+  },
+  "faster-large-v3": {
+    "model_name": "faster-large-v3",
+    "load_time_seconds": 2.3593549728393555,
+    "transcribe_time_seconds": 6.664489030838013,
+    "total_time_seconds": 9.023844003677368,
+    "memory_usage_bytes": 2786820096.0,
+    "peak_memory_bytes": 2786820096.0,
+    "words_per_second": 2.700882230687178,
+    "word_count": 18,
+    "sample_text": " \u03ba\u03b1\u03b9 \u03c4\u03bf \u03ba\u03b9\u03cc\u03c4\u03bf\u03c2 \u03c0\u03c1\u03bf\u03bf spraw\u03bf\u03bd\u03c4\u03b9\u03ba\u03bf\u03cd\u03c2 \u03ba\u03b1\u03b9 \u03b1\u74dc\u76ae\u7db2.  Eles \u03b8\u03b5\u03af \u03c4\u03c1\u03cc\u03c0\u03bf\u03c2, \u03b1\u03c5\u03c4\u03cc \u03b4\u03b5\u03bd \u03b5\u03af\u03bd\u03b1\u03b9 \u03b7 \u03c4\u03c1\u03af\u03c1\u03b1 of being responsible.",
+    "real_time_factor": 0.4519829793718558
+  }
+}

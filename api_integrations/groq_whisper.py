@@ -73,6 +73,7 @@ class GroqWhisperAPI:
             summary = self.analyzer.summarize_text(full_transcription)
             sentiment = self.analyzer.analyze_sentiment(full_transcription)
             task_analysis = self.analyzer.extract_task_requirements(full_transcription)
+            thinking_tags = self.analyzer.get_thinking_tags(full_transcription)
             
             return {
                 "model": model_id,
@@ -80,6 +81,7 @@ class GroqWhisperAPI:
                 "summary": summary,
                 "sentiment_analysis": sentiment,
                 "task_analysis": task_analysis,
+                "thinking_tags": thinking_tags,
             } if response_format == 'json' else full_transcription
 
         except Exception as e:

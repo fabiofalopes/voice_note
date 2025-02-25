@@ -1,7 +1,10 @@
 # Voice Notes 
 
-[Whisper](https://github.com/openai/whisper)
-[Groq](https://console.groq.com/docs/speech-text)
+A command-line tool for recording, transcribing, and analyzing audio using both local models and API services.
+
+- [faster-whisper](https://github.com/guillaumekln/faster-whisper) - Local transcription using CTranslate2
+- [Whisper](https://github.com/openai/whisper) - Original OpenAI model
+- [Groq](https://console.groq.com/docs/speech-text) - API transcription service
 
 ## Installation
 
@@ -49,40 +52,11 @@ If you continue to face problems, please open an issue in the repository with de
 
 ## Usage
 
-To use this application, you can run it from the command line with various options:
+This application offers two main transcription methods:
+- Local transcription using faster-whisper (high-quality, offline, requires more resources)
+- API transcription using Groq (requires API key, internet connection)
 
-1. List available audio input devices:
-   ```
-   python -m cli.main --list-devices
-   ```
-
-2. Record audio until interrupted (Ctrl+C) and transcribe:
-   ```
-   python -m cli.main --record-until-q output.wav --model whisper-large-v3 --output transcription.json --transcribe
-   ```
-
-3. Record audio for a specific duration and transcribe:
-   ```
-   python -m cli.main --record --duration 30 output.wav --model whisper-large-v3 --output transcription.json --transcribe
-   ```
-
-4. Transcribe an existing audio file:
-   ```
-   python -m cli.main existing_audio.wav --model whisper-large-v3 --output transcription.json --transcribe
-   ```
-
-5. Translate an audio file:
-   ```
-   python -m cli.main existing_audio.wav --model whisper-large-v3 --output translation.json --translate
-   ```
-
-Additional options:
-- `--input-device`: Specify the input device index for recording
-- `--prompt`: Provide a prompt for transcription
-- `--language`: Specify the language of the audio
-- `--temperature`: Set the temperature for transcription
-
-## Audio Input Setup
+### Audio Input Setup
 
 To identify and select the correct audio input source:
 
@@ -91,25 +65,60 @@ To identify and select the correct audio input source:
    python -m cli.main --list-devices
    ```
 
-2. Use the `--input-device` flag with the desired device ID:
+2. Use the `--input-device` flag with the desired device ID when recording.
+
+### Basic Commands
+
+#### Local Transcription (using faster-whisper)
+
+1. Record audio until interrupted (Ctrl+C) and transcribe with local model:
    ```
-   python -m cli.main --record-until-q my_recording.wav --input-device <DEVICE_ID> --model whisper-large-v3 --output transcription_result.json --transcribe
+   python -m cli.main --api local --record-until-q recording.wav --transcribe
    ```
 
-   Replace `<DEVICE_ID>` with the ID of your chosen input device.
+2. Record audio for a specific duration (30 seconds) and transcribe with local model:
+   ```
+   python -m cli.main --api local --record --duration 30 recording.wav --transcribe
+   ```
 
-## TODO: Future Improvements
+3. Transcribe an existing audio file with local model:
+   ```
+   python -m cli.main --api local existing_audio.wav --transcribe
+   ```
 
-1. Implement a graphical user interface (GUI) for easier interaction.
-2. Add support for batch processing of multiple audio files.
-3. Implement real-time transcription for live audio input.
-4. Add more post-processing options for the transcribed text (e.g., summarization, translation).
-5. Improve error handling and provide more detailed error messages.
-6. Add support for more transcription models and APIs.
-7. Implement a progress bar for long transcriptions.
-8. Add an option to save the preprocessed audio file.
-9. Implement automatic language detection.
-10. Add support for custom vocabulary or domain-specific language models.
-11. Implement a system to request and handle audio input permissions on different operating systems.
-12. Add a troubleshooting guide for common audio input issues.
-13. Implement a testing suite for audio input functionality across different environments.
+#### API Transcription (using Groq)
+
+1. Record audio until interrupted (Ctrl+C) and transcribe with Groq API:
+   ```
+   python -m cli.main --api groq --record-until-q recording.wav --model whisper-large-v3 --transcribe
+   ```
+
+2. Record audio for a specific duration and transcribe with Groq API:
+   ```
+   python -m cli.main --api groq --record --duration 30 recording.wav --model whisper-large-v3 --transcribe
+   ```
+
+3. Transcribe an existing audio file with Groq API:
+   ```
+   python -m cli.main --api groq existing_audio.wav --model whisper-large-v3 --transcribe
+   ```
+
+4. Translate an audio file:
+   ```
+   python -m cli.main --api groq existing_audio.wav --model whisper-large-v3 --translate
+   ```
+
+### Advanced Options
+
+- `--input-device <ID>`: Specify the input device index for recording
+- `--prompt <TEXT>`: Provide a prompt for transcription
+- `--language <CODE>`: Specify the language of the audio (e.g., "en", "fr")
+- `--temperature <VALUE>`: Set the temperature for transcription (0.0-1.0)
+- `--output <FILE>`: Save the transcription output to a JSON file
+- `--vad`: Use Voice Activity Detection (only with faster-whisper)
+- `--word-timestamps`: Include word-level timestamps in output
+- `--beam-size <NUMBER>`: Set beam size for faster-whisper decoding (default: 5)
+
+### Benchmarking faster-whisper Models
+
+To compare the performance of different faster-whisper models:

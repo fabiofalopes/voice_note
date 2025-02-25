@@ -56,7 +56,7 @@ chat_completion = client.chat.completions.create(
     ],
 
     # The language model which will generate the completion.
-    model="llama3-8b-8192",
+    model="llama3-70b-8192",
 
     #
     # Optional parameters
@@ -123,7 +123,7 @@ stream = client.chat.completions.create(
     ],
 
     # The language model which will generate the completion.
-    model="llama3-8b-8192",
+    model="llama3-70b-8192",
 
     #
     # Optional parameters
@@ -186,7 +186,7 @@ chat_completion = client.chat.completions.create(
     ],
 
     # The language model which will generate the completion.
-    model="llama3-8b-8192",
+    model="llama3-70b-8192",
 
     #
     # Optional parameters
@@ -257,7 +257,7 @@ async def main():
         ],
 
         # The language model which will generate the completion.
-        model="llama3-8b-8192",
+        model="llama3-70b-8192",
 
         #
         # Optional parameters
@@ -323,7 +323,7 @@ async def main():
         ],
 
         # The language model which will generate the completion.
-        model="llama3-8b-8192",
+        model="llama3-70b-8192",
 
         #
         # Optional parameters
@@ -399,7 +399,7 @@ def get_recipe(recipe_name: str) -> Recipe:
                 "content": f"Fetch a recipe for {recipe_name}",
             },
         ],
-        model="llama3-8b-8192",
+        model="llama3-70b-8192",
         temperature=0,
         # Streaming is not supported in JSON mode
         stream=False,
