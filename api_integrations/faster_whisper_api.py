@@ -4,13 +4,14 @@ import platform
 import time
 from typing import Dict, Any, Optional, List
 from tqdm import tqdm
+from pydub import AudioSegment
 
 class FasterWhisperAPI:
     """API for faster-whisper models using CTranslate2 backend"""
     
     models = ["tiny", "base", "small", "medium", "large", "large-v2", "large-v3", "distil-large-v3"]
     default_model = "large-v3"
-    #default_model = "tiny"
+    #default_model = "medium"
     def __init__(self, 
                  compute_type="float16",
                  device="auto", 
@@ -154,6 +155,31 @@ class FasterWhisperAPI:
                 print(f"❌ Failed to load model even with conservative settings: {e}")
                 raise
     
+    def _split_audio(self, file_path: str, chunk_duration: int = 10 * 60 * 1000) -> List[str]:
+        """
+        Split a large audio file into smaller chunks.
+        
+        :param file_path: Path to the audio file
+        :param chunk_duration: Duration of each chunk in milliseconds (default: 10 minutes)
+        :return: List of paths to the split audio files
+        """
+        audio = AudioSegment.from_file(file_path)
+        # Get the directory of the original file
+        dir_path = os.path.dirname(os.path.abspath(file_path))
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        chunks = []
+
+        # Make sure the directory exists
+        os.makedirs(dir_path, exist_ok=True)
+
+        for i, chunk in enumerate(audio[::chunk_duration]):
+            # Create chunk name with full path
+            chunk_name = os.path.join(dir_path, f"{base_name}_chunk_{i}.mp3")
+            chunk.export(chunk_name, format="mp3")
+            chunks.append(chunk_name)
+
+        return chunks
+    
     def transcribe_audio(self, file_path: str, model_id: str = None, **kwargs):
         """
         Transcribe audio using faster-whisper.
@@ -168,6 +194,10 @@ class FasterWhisperAPI:
         
         # Start timing transcription
         start_time = time.time()
+        
+        # Check file size - consider chunking for files over certain size
+        file_size = os.path.getsize(file_path)
+        large_file_threshold = 100 * 1024 * 1024  # 100 MB, adjust as needed
         
         # Extract known parameters but remove them from kwargs
         beam_size = kwargs.pop('beam_size', 5)
@@ -208,39 +238,90 @@ class FasterWhisperAPI:
         print(f"📋 Task: {task}")
         print("="*50 + "\n")
         
-        print(f"⏳ Processing audio with {model_id} model...")
-        
-        # Run transcription with explicit parameters
-        segments, info = model.transcribe(
-            file_path,
-            beam_size=beam_size,
-            language=language,
-            task=task,
-            vad_filter=vad_filter,
-            vad_parameters=vad_parameters if vad_filter else None,
-            word_timestamps=word_timestamps,
-            **kwargs  # Any remaining kwargs
-        )
-        
-        # Create a progress bar for transcription completion
-        print("⏳ Assembling transcription results...")
-        with tqdm(desc="Processing", unit="segment") as pbar:
-            # Convert generator to list with progress updates
-            segments_list = []
-            for segment in segments:
-                segments_list.append(segment)
-                pbar.update(1)
+        # Process large files in chunks if needed
+        if file_size > large_file_threshold:
+            print(f"📏 Large file detected ({file_size/1024/1024:.2f} MB). Processing in chunks...")
+            chunks = self._split_audio(file_path)
+            
+            # Process chunks and combine results
+            full_text = ""
+            all_segments = []
+            info = None
+            
+            for i, chunk_path in enumerate(chunks):
+                print(f"🔄 Processing chunk {i+1}/{len(chunks)}...")
+                
+                # Run transcription with explicit parameters
+                segments, chunk_info = model.transcribe(
+                    chunk_path,
+                    beam_size=beam_size,
+                    language=language,
+                    task=task,
+                    vad_filter=vad_filter,
+                    vad_parameters=vad_parameters if vad_filter else None,
+                    word_timestamps=word_timestamps,
+                    **kwargs  # Any remaining kwargs
+                )
+                
+                # Store info from first chunk or update as needed
+                if info is None:
+                    info = chunk_info
+                
+                # Create a progress bar for transcription completion
+                with tqdm(desc=f"Processing chunk {i+1}", unit="segment") as pbar:
+                    # Convert generator to list with progress updates
+                    segments_list = []
+                    for segment in segments:
+                        # Adjust segment times for chunks after the first one
+                        if i > 0 and hasattr(segment, 'start') and hasattr(segment, 'end'):
+                            # Estimate time offset based on chunk duration (10 minutes per chunk)
+                            time_offset = i * 10 * 60  # in seconds
+                            segment.start += time_offset
+                            segment.end += time_offset
+                        
+                        segments_list.append(segment)
+                        pbar.update(1)
+                
+                # Add segments to combined results
+                all_segments.extend(segments_list)
+                
+                # Add text
+                chunk_text = " ".join(segment.text for segment in segments_list)
+                full_text += " " + chunk_text
+        else:
+            print(f"⏳ Processing audio with {model_id} model...")
+            
+            # Run transcription with explicit parameters for regular-sized file
+            segments, info = model.transcribe(
+                file_path,
+                beam_size=beam_size,
+                language=language,
+                task=task,
+                vad_filter=vad_filter,
+                vad_parameters=vad_parameters if vad_filter else None,
+                word_timestamps=word_timestamps,
+                **kwargs  # Any remaining kwargs
+            )
+            
+            # Create a progress bar for transcription completion
+            print("⏳ Assembling transcription results...")
+            with tqdm(desc="Processing", unit="segment") as pbar:
+                # Convert generator to list with progress updates
+                all_segments = []
+                for segment in segments:
+                    all_segments.append(segment)
+                    pbar.update(1)
+            
+            # Create full text from segments
+            full_text = " ".join(segment.text for segment in all_segments)
         
         # Calculate and store transcription time
         transcription_time = time.time() - start_time
         self.metrics["transcription_times"][model_id] = transcription_time
         
-        # Format response to match other APIs
-        full_text = " ".join(segment.text for segment in segments_list)
-        
-        # Format segments into a standard format if needed
+        # Format segments into a standard format
         formatted_segments = []
-        for segment in segments_list:
+        for segment in all_segments:
             formatted_segment = {
                 "start": segment.start,
                 "end": segment.end,
@@ -258,7 +339,6 @@ class FasterWhisperAPI:
         
         # Calculate real-time factor
         try:
-            from pydub import AudioSegment
             audio = AudioSegment.from_file(file_path)
             audio_duration = len(audio) / 1000  # in seconds
             real_time_factor = transcription_time / audio_duration

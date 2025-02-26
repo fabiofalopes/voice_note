@@ -126,11 +126,17 @@ def _split_audio(file_path: str, chunk_duration: int = 10 * 60 * 1000) -> List[s
     :return: List of paths to the split audio files
     """
     audio = AudioSegment.from_file(file_path)
+    # Get the directory of the original file
+    dir_path = os.path.dirname(os.path.abspath(file_path))
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     chunks = []
 
+    # Make sure the directory exists
+    os.makedirs(dir_path, exist_ok=True)
+
     for i, chunk in enumerate(audio[::chunk_duration]):
-        chunk_name = f"{base_name}_chunk_{i}.mp3"
+        # Create chunk name with full path
+        chunk_name = os.path.join(dir_path, f"{base_name}_chunk_{i}.mp3")
         chunk.export(chunk_name, format="mp3")
         chunks.append(chunk_name)
 
