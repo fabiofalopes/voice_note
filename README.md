@@ -274,6 +274,20 @@ python -m cli.main --api groq --record --duration 30 recording.wav --transcribe
 python -m cli.main --api groq existing_audio.wav --transcribe
 ```
 
+For convenience, you can add this alias to your shell's rc file (e.g., `.bashrc`, `.zshrc`):
+
+```bash
+alias voice_note='cd ~/Documents/projetos/hub/voice_note && source .venv/bin/activate && python -m cli.main --api groq --record-until-q recording.wav --transcribe --raw-transcription && deactivate'
+```
+
+This alias will:
+1. Navigate to the project directory
+2. Activate the virtual environment
+3. Run the transcription command
+4. Deactivate the virtual environment
+
+After adding the alias, you can simply run `voice_note` from anywhere to start recording and transcribing.
+
 ## Troubleshooting
 
 ### Daemon Issues
