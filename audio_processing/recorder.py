@@ -6,28 +6,43 @@ from config.config import AUDIO_CONFIG
 import sys
 import time
 
+def list_audio_devices():
+    """
+    List all available audio input devices.
+    This function can be called directly without creating an AudioRecorder instance.
+    """
+    p = pyaudio.PyAudio()
+    info = p.get_host_api_info_by_index(0)
+    numdevices = info.get('deviceCount')
+    
+    print("Available audio input devices:")
+    print("-" * 40)
+    
+    for i in range(0, numdevices):
+        if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+            print(f"Input Device id {i} - {p.get_device_info_by_host_api_device_index(0, i).get('name')}")
+    
+    print("-" * 40)
+    p.terminate()
+
 class AudioRecorder:
-    def __init__(self, output_directory='recordings'):
+    def __init__(self, output_directory='recordings', device_index=None):
         self.chunk = 1024
         self.format = pyaudio.paInt16
         self.channels = 1
         self.rate = 44100
         self.output_directory = output_directory
-        self.input_device_index = AUDIO_CONFIG.get('input_device_index')
+        self.input_device_index = device_index if device_index is not None else AUDIO_CONFIG.get('input_device_index')
         
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
     def list_input_devices(self):
-        p = pyaudio.PyAudio()
-        info = p.get_host_api_info_by_index(0)
-        numdevices = info.get('deviceCount')
-        
-        for i in range(0, numdevices):
-            if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-                print(f"Input Device id {i} - {p.get_device_info_by_host_api_device_index(0, i).get('name')}")
-        
-        p.terminate()
+        """
+        List all available audio input devices.
+        This is an instance method that does the same as the standalone function.
+        """
+        list_audio_devices()
 
     def save_wav(self, frames, file_path):
         """

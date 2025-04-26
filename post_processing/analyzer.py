@@ -1,182 +1,33 @@
 import os
-from typing import Any, Dict, Optional
-from groq import Groq
+from typing import Any, Dict, Optional, List
+from groq import Groq, APIError
 from config.config import GROQ_API_KEY
-import json  # Add this import at the top of the file
+import json
+import time
 
-models = [
-    "gemma2-9b-it",  # 0 - Google, 8,192 context window
-    "llama-3.3-70b-versatile",  # 1 - Meta, 128K context, 32,768 max completion
-    "llama-3.1-8b-instant",  # 2 - Meta, 128K context, 8,192 max completion
-    "llama-3.3-70b-specdec",  # 3 - Meta, 8,192 context window
-    "llama3-8b-8192",  # 4 - Meta, 8,192 context window
-    "mixtral-8x7b-32768",  # 5 - Mistral, 32,768 context window
-    "deepseek-r1-distill-llama-70b",  # 6 - DeepSeek, 128K context, 16,384 max completion
-    "deepseek-r1-distill-llama-70b-specdec",  # 7 - DeepSeek, 128K context, 16,384 max completion
-    "llama-3.2-1b-preview",  # 8 - Meta, 128K context, 8,192 max completion
-    "llama-3.2-3b-preview",  # 9 - Meta, 128K context, 8,192 max completion
-    "llama-3.2-11b-vision-preview",  # 10 - Meta, 128K context, 8,192 max completion
-    "llama-3.2-90b-vision-preview",  # 11 - Meta, 128K context, 8,192 max completion
+# Define the preferred order of LLMs to use for analysis
+PREFERRED_LLM_IDS = [
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "llama-3.3-70b-versatile",
+    "meta-llama/llama-4-maverick-17b-128e-instruct",
+    "deepseek-r1-distill-llama-70b",
+    "llama-3.1-8b-instant",
+    "mistral-saba-24b",
+    "gemma2-9b-it",
+    "llama3-70b-8192",
+    "llama3-8b-8192",
+    "qwen-qwq-32b",
+    "allam-2-7b",
 ]
 
-MODEL = models[3]
-    
-# Add the following dictionary with the models information
-
-GROQ_MODELS = {
-    "Production": {
-        "distil-whisper-large-v3-en": {
-            "developer": "HuggingFace",
-            "context_window": None,
-            "max_completion_tokens": None,
-            "max_file_size": "25 MB",
-            "card_link": "https://huggingface.co/distil-whisper/distil-large-v3",
-        },
-        "gemma2-9b-it": {
-            "developer": "Google",
-            "context_window": 8192,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/google/gemma-2-9b-it",
-        },
-        "llama-3.3-70b-versatile": {
-            "developer": "Meta",
-            "context_window": 128000,
-            "max_completion_tokens": 32768,
-            "max_file_size": None,
-            "card_link": "https://github.com/meta-llama/llama-models/blob/main/models/llama3_3/MODEL_CARD.md",
-        },
-        "llama-3.1-8b-instant": {
-            "developer": "Meta",
-            "context_window": 128000,
-            "max_completion_tokens": 8192,
-            "max_file_size": None,
-            "card_link": "https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/MODEL_CARD.md",
-        },
-        "llama-guard-3-8b": {
-            "developer": "Meta",
-            "context_window": 8192,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://console.groq.com/docs/model/llama-guard-3-8b",
-        },
-        "llama3-70b-8192": {
-            "developer": "Meta",
-            "context_window": 8192,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/meta-llama/Meta-Llama-3-70B-Instruct",
-        },
-        "llama3-8b-8192": {
-            "developer": "Meta",
-            "context_window": 8192,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct",
-        },
-        "mixtral-8x7b-32768": {
-            "developer": "Mistral",
-            "context_window": 32768,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1",
-        },
-        "whisper-large-v3": {
-            "developer": "OpenAI",
-            "context_window": None,
-            "max_completion_tokens": None,
-            "max_file_size": "25 MB",
-            "card_link": "https://huggingface.co/openai/whisper-large-v3",
-        },
-        "whisper-large-v3-turbo": {
-            "developer": "OpenAI",
-            "context_window": None,
-            "max_completion_tokens": None,
-            "max_file_size": "25 MB",
-            "card_link": "https://huggingface.co/openai/whisper-large-v3-turbo",
-        },
-    },
-    "Preview": {
-        "qwen-2.5-coder-32b": {
-            "developer": "Alibaba Cloud",
-            "context_window": 128000,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct",
-        },
-        "qwen-2.5-32b": {
-            "developer": "Alibaba Cloud",
-            "context_window": 128000,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/Qwen/Qwen2.5-32B-Instruct",
-        },
-        "deepseek-r1-distill-qwen-32b": {
-            "developer": "DeepSeek",
-            "context_window": 128000,
-            "max_completion_tokens": 16384,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-        },
-        "deepseek-r1-distill-llama-70b-specdec": {
-            "developer": "DeepSeek",
-            "context_window": 128000,
-            "max_completion_tokens": 16384,
-            "max_file_size": None,
-            "card_link": "https://console.groq.com/docs/model/deepseek-r1-distill-llama-70b",
-        },
-        "deepseek-r1-distill-llama-70b": {
-            "developer": "DeepSeek",
-            "context_window": 128000,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://console.groq.com/docs/model/deepseek-r1-distill-llama-70b",
-        },
-        "llama-3.3-70b-specdec": {
-            "developer": "Meta",
-            "context_window": 8192,
-            "max_completion_tokens": None,
-            "max_file_size": None,
-            "card_link": "https://github.com/meta-llama/llama-models/blob/main/models/llama3_3/MODEL_CARD.md",
-        },
-        "llama-3.2-1b-preview": {
-            "developer": "Meta",
-            "context_window": 128000,
-            "max_completion_tokens": 8192,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/meta-llama/Llama-3.2-1B",
-        },
-        "llama-3.2-3b-preview": {
-            "developer": "Meta",
-            "context_window": 128000,
-            "max_completion_tokens": 8192,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/meta-llama/Llama-3.2-3B",
-        },
-        "llama-3.2-11b-vision-preview": {
-            "developer": "Meta",
-            "context_window": 128000,
-            "max_completion_tokens": 8192,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/meta-llama/Llama-3.2-11B-Vision",
-        },
-        "llama-3.2-90b-vision-preview": {
-            "developer": "Meta",
-            "context_window": 128000,
-            "max_completion_tokens": 8192,
-            "max_file_size": None,
-            "card_link": "https://huggingface.co/meta-llama/Llama-3.2-90B-Vision-Instruct",
-        },
-    },
-}
-
-# You can now use this dictionary to access model information.  For example:
-# print(GROQ_MODELS["Production"]["llama3-70b-8192"]["card_link"])
+class NoAvailableLLMError(Exception):
+    """Custom exception raised when no suitable LLM is available or responds."""
+    pass
 
 class TextAnalyzer:
     """
     A class to perform post-processing analyses on transcribed text
-    using Groq's Chat Completions API.
+    using Groq's Chat Completions API, with dynamic model selection.
     """
 
     def __init__(self):
@@ -184,11 +35,99 @@ class TextAnalyzer:
             raise ValueError("GROQ_API_KEY is not set in environment variables.")
         os.environ['GROQ_API_KEY'] = GROQ_API_KEY
         self.client = Groq()
+        self.available_llms: Dict[str, Dict[str, Any]] = {}
+        self.prioritized_llms: List[str] = []
+        self._fetch_and_filter_models()
+
+        if not self.prioritized_llms:
+            raise NoAvailableLLMError("Initialization failed: No suitable LLMs found available via Groq API.")
+        print(f"Initialized TextAnalyzer. Prioritized models: {self.prioritized_llms}")
+
+    def _fetch_and_filter_models(self):
+        """Fetches models from Groq API, filters for suitable LLMs, and prioritizes them."""
+        try:
+            models_response = self.client.models.list()
+            all_models = models_response.data
+        except APIError as e:
+            print(f"Error fetching models from Groq API: {e}")
+            # Optionally, load from a cached list or raise error
+            return
+
+        self.available_llms = {}
+        excluded_keywords = ["whisper", "tts", "guard", "compound"]
+
+        for model in all_models:
+            if model.active:
+                model_id = model.id
+                # Filter out non-LLM models based on keywords
+                if not any(keyword in model_id for keyword in excluded_keywords):
+                    self.available_llms[model_id] = {
+                        "context_window": model.context_window,
+                        "max_completion_tokens": getattr(model, 'max_completion_tokens', None) # Use getattr for safety
+                    }
+        
+        print(f"Found available LLMs: {list(self.available_llms.keys())}")
+
+        # Create prioritized list
+        self.prioritized_llms = []
+        for pref_id in PREFERRED_LLM_IDS:
+            if pref_id in self.available_llms:
+                self.prioritized_llms.append(pref_id)
+
+        # Add any remaining available LLMs not in the preferred list as fallback
+        for available_id in self.available_llms:
+            if available_id not in self.prioritized_llms:
+                 self.prioritized_llms.append(available_id)
+
+    def _make_api_call(self, messages: List[Dict[str, str]], **kwargs) -> Dict[str, Any]:
+        """Makes the API call, iterating through prioritized models on failure."""
+        last_error = None
+        for model_id in self.prioritized_llms:
+            try:
+                print(f"Attempting API call with model: {model_id}")
+                response = self.client.chat.completions.create(
+                    messages=messages,
+                    model=model_id,
+                    **kwargs
+                )
+                print(f"API call successful with model: {model_id}")
+                return response.choices[0].message.content # Return content directly
+            
+            except APIError as e:
+                # Check for specific error codes indicating model unavailability
+                # Adjust codes based on actual Groq SDK behavior if different
+                if e.status_code == 400 and e.body and ("model_decommissioned" in e.body.get("code", "") or "model_not_found" in e.body.get("code", "")):
+                    print(f"Model {model_id} is unavailable ({e.body.get('code', 'Unknown code')}). Trying next model.")
+                    last_error = e
+                    continue # Try the next model
+                elif e.status_code == 429: # Rate limiting
+                    print(f"Rate limit hit with model {model_id}. Waiting and retrying... ({e})")
+                    time.sleep(5) # Simple backoff
+                    # Consider re-trying the same model or moving to the next
+                    last_error = e
+                    continue # Re-try or try next model
+                else:
+                    print(f"An unexpected API error occurred with model {model_id}: {e}")
+                    last_error = e
+                    # Depending on the error, might want to break or continue
+                    continue # Or raise e directly
+            except Exception as e:
+                print(f"A non-API error occurred during the call with model {model_id}: {e}")
+                last_error = e
+                continue # Try the next model
+
+        # If loop finishes without success
+        if last_error:
+             print(f"All attempts failed. Last error: {last_error}")
+             # Propagate the last known error or raise custom error
+             raise NoAvailableLLMError(f"Failed to get completion from any model. Last error: {last_error}") from last_error
+        else:
+            # Should not happen if prioritized_llms was not empty initially, but good practice
+            raise NoAvailableLLMError("Failed to get completion. No models were attempted.")
 
     def summarize_text(self, text: str, summary_length: Optional[int] = 150) -> str:
         """
         Summarize the provided text.
-
         :param text: The text to summarize.
         :param summary_length: Desired length of the summary.
         :return: Summarized text.
@@ -198,28 +137,28 @@ class TextAnalyzer:
                 {"role": "system", "content": "You are an expert summarizer."},
                 {"role": "user", "content": f"Summarize the following text in {summary_length} words:\n\n{text}"}
             ]
-
-            response = self.client.chat.completions.create(
+            
+            # Use the helper method
+            summary = self._make_api_call(
                 messages=messages,
-                model=MODEL,
                 temperature=0.3,
-                max_tokens=summary_length * 2,
+                max_tokens=summary_length * 2, # Allow ample tokens for summary
                 top_p=1,
                 stop=None,
                 stream=False
             )
+            return summary.strip() # .strip() the final result
 
-            summary = response.choices[0].message.content.strip()
-            return summary
-
+        except NoAvailableLLMError as e:
+            print(f"Summarization failed: {e}")
+            return "" # Or raise
         except Exception as e:
-            print(f"An error occurred during summarization: {e}")
+            print(f"An unexpected error occurred during summarization: {e}")
             return ""
 
     def analyze_sentiment(self, text: str) -> Dict[str, Any]:
         """
         Analyze the sentiment of the provided text.
-
         :param text: The text to analyze.
         :return: A dictionary containing sentiment analysis results.
         """
@@ -227,14 +166,14 @@ class TextAnalyzer:
             messages = [
                 {
                     "role": "system",
-                    "content": "You are a data analyst API capable of sentiment analysis that responds in JSON. The JSON schema should include {\"sentiment_analysis\": {\"sentiment\": \"string (positive, negative, neutral)\", \"confidence_score\": \"number (0-1)\"}}."
+                    "content": "You are a data analyst API capable of sentiment analysis that responds in JSON. The JSON schema should include {\"sentiment_analysis\": {\"sentiment\": \"string (positive, negative, neutral)\", \"confidence_score\": \"number (0-1)\"}}"
                 },
                 {"role": "user", "content": text}
             ]
-
-            response = self.client.chat.completions.create(
+            
+            # Use the helper method
+            response_content = self._make_api_call(
                 messages=messages,
-                model=MODEL,
                 temperature=0.0,
                 max_tokens=100,
                 top_p=1,
@@ -243,58 +182,65 @@ class TextAnalyzer:
                 response_format={"type": "json_object"}
             )
 
-            # Parse the JSON content from the response
-            sentiment_data = json.loads(response.choices[0].message.content)
+            sentiment_data = json.loads(response_content)
             return sentiment_data
 
+        except NoAvailableLLMError as e:
+            print(f"Sentiment analysis failed: {e}")
+            return {"error": str(e)}
         except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
+            print(f"Error decoding JSON from API response: {e}")
             return {"error": "Failed to parse sentiment analysis result"}
         except Exception as e:
-            print(f"An error occurred during sentiment analysis: {e}")
+            print(f"An unexpected error occurred during sentiment analysis: {e}")
             return {"error": str(e)}
 
-    def extract_task_requirements(self, text: str) -> Dict[str, Any]:
+    def analyze_key_components(self, text: str) -> Dict[str, Any]:
         """
-        Extract tasks, requirements, and steps from the provided text.
-
+        Analyze the provided text to extract key components, considerations, and important aspects.
+        This method helps identify critical elements, potential areas of focus, and important considerations
+        in any given text, regardless of whether it's task-oriented or not.
         :param text: The text to analyze.
-        :return: A dictionary containing structured task information.
+        :return: A dictionary containing structured analysis of key components and considerations.
         """
         try:
             messages = [
                 {
                     "role": "system",
                     "content": "You are an expert task analyzer. Given an input, extract the main task, requirements, steps, and any additional components needed to achieve the objective. Provide a structured response in JSON format."
+                    #"content": "You are an expert text analyzer. Given an input, extract key components, important considerations, potential areas of focus, and any additional elements that deserve attention. Provide a structured response in JSON format."
                 },
-                {"role": "user", "content": f"Analyze the following text and extract task information:\n\n{text}"}
+                {"role": "user", "content": f"Analyze the following text and extract task information:\n\n{text}"}            
+                #{"role": "user", "content": f"Analyze the following text and extract key components and considerations:\n\n{text}"}
             ]
-
-            response = self.client.chat.completions.create(
+            
+            # Use the helper method
+            response_content = self._make_api_call(
                 messages=messages,
-                model=MODEL,
                 temperature=0.2,
-                max_tokens=1000,
+                max_tokens=1000, # Ensure enough tokens for potentially complex analysis
                 top_p=1,
                 stop=None,
                 stream=False,
                 response_format={"type": "json_object"}
             )
+            
+            analysis_data = json.loads(response_content)
+            return analysis_data
 
-            task_data = json.loads(response.choices[0].message.content)
-            return task_data
-
+        except NoAvailableLLMError as e:
+            print(f"Key component analysis failed: {e}")
+            return {"error": str(e)}
         except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
-            return {"error": "Failed to parse task analysis result"}
+            print(f"Error decoding JSON from API response: {e}")
+            return {"error": "Failed to parse analysis result"}
         except Exception as e:
-            print(f"An error occurred during task analysis: {e}")
+            print(f"An unexpected error occurred during analysis: {e}")
             return {"error": str(e)}
 
     def get_thinking_tags(self, text: str) -> Dict[str, Any]:
         """
-        Extract thinking tags from the provided text, using a DeepSeek model.
-
+        Extract thinking tags from the provided text.
         :param text: The text to analyze.
         :return: A dictionary containing structured thinking tag information.
         """
@@ -306,10 +252,10 @@ class TextAnalyzer:
                 },
                 {"role": "user", "content": f"Analyze the following text and extract thinking tags:\n\n{text}"}
             ]
-
-            response = self.client.chat.completions.create(
+            
+            # Use the helper method
+            response_content = self._make_api_call(
                 messages=messages,
-                model=models[6],  # You might want a separate DeepSeek model here if needed.
                 temperature=0.2,
                 max_tokens=500, # Adjust as needed
                 top_p=1,
@@ -318,12 +264,15 @@ class TextAnalyzer:
                 response_format={"type": "json_object"}
             )
 
-            tag_data = json.loads(response.choices[0].message.content)
+            tag_data = json.loads(response_content)
             return tag_data
-
+            
+        except NoAvailableLLMError as e:
+            print(f"Thinking tag extraction failed: {e}")
+            return {"error": str(e)}
         except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
+            print(f"Error decoding JSON from API response: {e}")
             return {"error": "Failed to parse thinking tag analysis result"}
         except Exception as e:
-            print(f"An error occurred during thinking tag analysis: {e}")
+            print(f"An unexpected error occurred during thinking tag analysis: {e}")
             return {"error": str(e)}

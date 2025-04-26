@@ -10,7 +10,8 @@ from post_processing.analyzer import TextAnalyzer  # Changed to absolute import
 class GroqWhisperAPI:
     models = [
         "whisper-large-v3",
-        "distil-whisper-large-v3-en"
+        "distil-whisper-large-v3-en",
+        "whisper-large-v3-turbo"
     ]
 
     SELECTED_MODEL = models[0]
@@ -21,7 +22,7 @@ class GroqWhisperAPI:
             raise ValueError("GROQ_API_KEY is not set in environment variables.")
         os.environ['GROQ_API_KEY'] = GROQ_API_KEY
         self.client = Groq()
-        self.analyzer = TextAnalyzer()
+        self.analyzer = None  # Initialize analyzer only when needed
 
     def transcribe_audio(
         self,
@@ -32,7 +33,8 @@ class GroqWhisperAPI:
         language: Optional[str] = None,
         temperature: Optional[float] = None,
         timestamp_granularities: Optional[List[str]] = None,
-        product_names: Optional[List[str]] = None
+        product_names: Optional[List[str]] = None,
+        raw_transcription: bool = False
     ) -> Union[dict, str]:
         try:
             model_id = model_id or self.SELECTED_MODEL
@@ -69,24 +71,33 @@ class GroqWhisperAPI:
             if product_names:
                 full_transcription = TextAnalyzer.post_process_transcript(full_transcription, product_names)
             
-            # Post-Processing: Summarization and Sentiment Analysis
-            summary = self.analyzer.summarize_text(full_transcription)
-            sentiment = self.analyzer.analyze_sentiment(full_transcription)
-            task_analysis = self.analyzer.extract_task_requirements(full_transcription)
-            thinking_tags = self.analyzer.get_thinking_tags(full_transcription)
+            if raw_transcription:
+                return full_transcription if response_format != 'json' else full_transcription
             
-            return {
-                "model": model_id,
-                "text": full_transcription,
-                "summary": summary,
-                "sentiment_analysis": sentiment,
-                "task_analysis": task_analysis,
-                "thinking_tags": thinking_tags,
-            } if response_format == 'json' else full_transcription
+            # Post-Processing: Summarization and Sentiment Analysis
+            if not raw_transcription:
+                if self.analyzer is None:
+                    self.analyzer = TextAnalyzer()
+                summary = self.analyzer.summarize_text(full_transcription)
+                sentiment = self.analyzer.analyze_sentiment(full_transcription)
+                task_analysis = self.analyzer.analyze_key_components(full_transcription)
+                thinking_tags = self.analyzer.get_thinking_tags(full_transcription)
+                
+                return {
+                    "model": model_id,
+                    "text": full_transcription,
+                    "summary": summary,
+                    "sentiment_analysis": sentiment,
+                    "task_analysis": task_analysis,
+                    "thinking_tags": thinking_tags,
+                } if response_format == 'json' else full_transcription
+            else:
+                return full_transcription if response_format != 'json' else full_transcription
 
         except Exception as e:
-            print(f"An error occurred during transcription: {e}")
-            traceback.print_exc()
+            if not raw_transcription:
+                print(f"An error occurred during transcription: {e}")
+                traceback.print_exc()
             return {"error": str(e)}
 
     def translate_audio(

@@ -1,0 +1,4 @@
+# Add explicit dependencies
+faster-whisper>=1.0.0
+ctranslate2>=3.22.0
+sentencepiece>=0.2.0 
