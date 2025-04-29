@@ -116,6 +116,105 @@ For Windows users:
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
    ```
 
+### PowerShell Profiles and Aliases Guide
+
+#### Sources
+- https://www.techtarget.com/searchwindowsserver/tutorial/How-to-find-and-customize-your-PowerShell-profile
+
+#### What is a PowerShell Profile?
+A PowerShell profile is a script that runs when PowerShell starts. It's like a configuration file where you can store functions, aliases, and other customizations.
+
+#### Profile Locations
+PowerShell has several possible profile locations:
+- `CurrentUserCurrentHost` (Most commonly used) - Applies to current user in current PowerShell host
+- `CurrentUserAllHosts` - Applies to current user in all PowerShell hosts
+- `AllUsersCurrentHost` - Applies to all users in current PowerShell host
+- `AllUsersAllHosts` - Applies to all users in all PowerShell hosts
+
+#### Setting Up Your Profile
+
+1. Create the Profile
+   ```powershell
+   # Create directory if it doesn't exist
+   New-Item -Path (Split-Path $PROFILE) -ItemType Directory -Force
+
+   # Create profile file if it doesn't exist
+   if (!(Test-Path -Path $PROFILE)) {
+       New-Item -ItemType File -Path $PROFILE -Force
+   }
+   ```
+
+2. Edit the Profile
+   ```powershell
+   notepad $PROFILE
+   ```
+
+3. Add Functions or Aliases
+   Example function:
+   ```powershell
+   function voice_note {
+       Set-Location -Path "C:\Users\fabio\voice_note"
+       .\venv\Scripts\Activate.ps1
+       python -m cli.main --api groq --record-until-q recording.wav --transcribe --raw-transcription
+       deactivate
+   }
+   ```
+
+   Example alias:
+   ```powershell
+   Set-Alias -Name vn -Value voice_note
+   ```
+
+4. Apply Changes
+   Either:
+   - Restart PowerShell, or
+   - Run `. $PROFILE` to reload
+
+#### Useful Commands
+
+Check if profile exists:
+```powershell
+Test-Path $PROFILE
+```
+
+View profile contents:
+```powershell
+Get-Content $PROFILE
+```
+
+View profile location:
+```powershell
+$PROFILE
+```
+
+#### Tips
+- Always backup your profile before making major changes
+- Test new functions in PowerShell before adding them to profile
+- Use descriptive names for functions and aliases
+- Add comments to complex functions for future reference
+
+#### Example Profile Structure
+```powershell
+# Aliases
+Set-Alias -Name vn -Value voice_note
+
+# Functions
+function voice_note {
+    Set-Location -Path "C:\Users\fabio\voice_note"
+    .\venv\Scripts\Activate.ps1
+    python -m cli.main --api groq --record-until-q recording.wav --transcribe --raw-transcription
+    deactivate
+}
+
+# More functions...
+function project2 {
+    Set-Location -Path "C:\path\to\project2"
+    # Additional commands
+}
+```
+
+Remember: After any changes to the profile, reload it using `. $PROFILE` or restart PowerShell.
+
 #### Linux
 
 For Linux (Ubuntu/Debian) users:
