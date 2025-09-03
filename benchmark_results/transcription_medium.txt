@@ -1,1 +1,0 @@
- Suggestions for further improvement based on your latest benchmark results I would recommend focus on the regular whisper models, the standard whisper models, try metal acceleration, reduce
