@@ -178,6 +178,7 @@ Stream B (packaging)     Stream C (provider registry)     Stream D (reliability 
 16. **Update `ROADMAP.md`** if your stream completed a Phase — mark `[x]` and date it.
 17. **If you created new strategy/architecture docs at repo root, you did the wrong thing** — edit AGENTS.md / MEMORY.md / docs/CONTRACT.md instead. New `.md` files at repo root are a smell.
 18. **If you touched the contract, bump `schema_version`** and document the change in [MEMORY.md §Changelog](./MEMORY.md#12-changelog).
+19. **Write a handoff prompt for the next session** at `docs/handoffs/YYYY-MM-DD-<task-slug>.md`. Date-stamp with the *next* session's expected start date. Use the most recent handoff in `docs/handoffs/` as the template. This is non-negotiable for multi-session continuity — state lives in files, not session context.
 
 ### 6.4 Commit message convention
 
