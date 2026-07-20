@@ -5,7 +5,7 @@
 > For agent operating rules: see [../AGENTS.md](../AGENTS.md).
 > For project history/state/decisions: see [../MEMORY.md](../MEMORY.md).
 
-**`schema_version: "1.0"`** — Draft. Frozen when Stream A DoD passes.
+**`schema_version: "1.0"`** — Frozen 2026-07-20 after Stream A DoD passed.
 
 ---
 
@@ -314,7 +314,7 @@ Every error path in `cli.py`, `base_client.py`, `recorder.py`, `robust_recorder.
 
 | `schema_version` | Status | Notes |
 |---|---|---|
-| `1.0` | Draft (this doc) | Initial contract. Will be frozen when Stream A DoD passes. |
+| `1.0` | Frozen | Initial contract. Stream A DoD passed 2026-07-20. |
 
 ---
 
@@ -507,23 +507,23 @@ def normalize_language(raw: str | None) -> str | None:
 
 **DoD checklist (17 items):**
 
-1. [ ] `vn recording.wav --ndjson | jq 'last | .code'` returns `"OK"` on success
-2. [ ] `vn recording.wav --json > /tmp/out.json && jq '.status' /tmp/out.json` returns `"ok"`
-3. [ ] `vn recording.wav --json | jq '.mode'` returns `"transcribe"` (or `"translate"` with `--translate`)
-4. [ ] `vn nonexistent.wav --ndjson; echo $?` exits `66` and last NDJSON line has `"code":"FILE_NOT_FOUND"`
-5. [ ] `vn recording.wav --provider modelos --ndjson` emits a `warning` event with `"code":"PROVIDER_FIELD_NULL"` for `avg_logprob` + `compression_ratio` + `no_speech_prob`, and the `segment` events carry `"avg_logprob":null` (NOT `0.0`)
-6. [ ] `vn recording.wav --ndjson 2>/dev/null` produces valid JSON on every line (stdout is pure)
-7. [ ] The on-disk `.json` file at `<audio>_transcription.json` is byte-identical (modulo `request_id`) to the stdout of `vn recording.wav --json`
-8. [ ] `vn --word-timestamps --provider modelos recording.wav` fails fast with exit `64` and message `"Provider 'modelos' does not support word timestamps"` (capability check, NOT a warning)
-9. [ ] `vn recording.wav --provider modelos --ndjson` (with a short audio) emits `TIMESTAMP_CLAMPED` warning AND `end` field in `segment` equals `input.duration_seconds` (NOT the hallucinated value)
-10. [ ] Ctrl+C during transcription exits `130`, last NDJSON line `"code":"USER_INTERRUPT"`, `status:"partial"` if any segments were emitted
-11. [ ] All chunks silent → exit `0`, `code: "NO_SPEECH_DETECTED"`, `status:"ok"`
-12. [ ] All `float(getattr(...))` calls in `_parse_response` removed — normaliser layer in place
-13. [ ] `schema_version` field is `"1.0"` and asserted in tests
-14. [ ] Output files written via temp → `fsync` → `os.replace` (transactional). Killing the process mid-write leaves no partial file at the final path.
-15. [ ] README has a "Programmatic use" section showing `jq` recipes for both `--json` and `--ndjson`
-16. [ ] `--help` documents public exit codes (0, 1, 2, 130) and points to JSON `code` field for granular semantics
-17. [ ] All tests in `tests/` pass
+1. [x] `vn recording.wav --ndjson | jq 'last | .data.code'` returns `"OK"` on success
+2. [x] `vn recording.wav --json > /tmp/out.json && jq '.status' /tmp/out.json` returns `"ok"`
+3. [x] `vn recording.wav --json | jq '.mode'` returns `"transcribe"` (or `"translate"` with `--translate`)
+4. [x] `vn nonexistent.wav --ndjson; echo $?` exits `66` and last NDJSON line has `"code":"FILE_NOT_FOUND"`
+5. [x] `vn recording.wav --provider modelos --ndjson` emits a `warning` event with `"code":"PROVIDER_FIELD_NULL"` for `avg_logprob` + `compression_ratio` + `no_speech_prob`, and the `segment` events carry `"avg_logprob":null` (NOT `0.0`)
+6. [x] `vn recording.wav --ndjson 2>/dev/null` produces valid JSON on every line (stdout is pure)
+7. [x] The on-disk `.json` file at `<audio>_transcription.json` is byte-identical (modulo `request_id`) to the stdout of `vn recording.wav --json`
+8. [x] `vn --word-timestamps --provider modelos recording.wav` fails fast with exit `64` and message `"Provider 'modelos' does not support word timestamps"` (capability check, NOT a warning)
+9. [x] `vn recording.wav --provider modelos --ndjson` (with a short audio) emits `TIMESTAMP_CLAMPED` warning AND `end` field in `segment` equals `input.duration_seconds` (NOT the hallucinated value)
+10. [x] Ctrl+C during transcription exits `130`, last NDJSON line `"code":"USER_INTERRUPT"`, `status:"partial"` if any segments were emitted
+11. [x] All chunks silent → exit `0`, `code: "NO_SPEECH_DETECTED"`, `status:"ok"`
+12. [x] All `float(getattr(...))` calls in `_parse_response` removed — normaliser layer in place
+13. [x] `schema_version` field is `"1.0"` and asserted in tests
+14. [x] Output files written via temp → `fsync` → `os.replace` (transactional). Killing the process mid-write leaves no partial file at the final path.
+15. [x] README has a "Programmatic use" section showing `jq` recipes for both `--json` and `--ndjson`
+16. [x] `--help` documents public exit codes (0, 1, 2, 130) and points to JSON `code` field for granular semantics
+17. [x] All tests in `tests/` pass
 
 **Anti-scope (do NOT in Stream A):**
 - Do NOT change the recording logic, provider internal logic, or `.txt`/`.srt` file formats. Only the *stdout/stderr* surface and the `.json` file shape change.
