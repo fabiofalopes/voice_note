@@ -1,0 +1,62 @@
+[
+  {
+    "schema_version": "1.0",
+    "request_id": "11111111-1111-4111-8111-111111111111",
+    "event_id": "<uuid>",
+    "sequence": 0,
+    "time": "<time>",
+    "level": "info",
+    "type": "start",
+    "data": {
+      "command": "transcribe",
+      "mode": "transcribe",
+      "provider": "groq",
+      "audio": "/tmp/audio.wav",
+      "duration_seconds": 2.28
+    }
+  },
+  {
+    "schema_version": "1.0",
+    "request_id": "11111111-1111-4111-8111-111111111111",
+    "event_id": "<uuid>",
+    "sequence": 1,
+    "time": "<time>",
+    "level": "warning",
+    "type": "warning",
+    "data": {
+      "code": "PROVIDER_FIELD_NULL",
+      "chunk_index": 0,
+      "detail": "quality fields unavailable"
+    }
+  },
+  {
+    "schema_version": "1.0",
+    "request_id": "11111111-1111-4111-8111-111111111111",
+    "event_id": "<uuid>",
+    "sequence": 2,
+    "time": "<time>",
+    "level": "info",
+    "type": "end",
+    "data": {
+      "status": "ok",
+      "code": "OK",
+      "mode": "transcribe",
+      "segments_total": 0,
+      "chars_total": 0,
+      "outputs": {},
+      "timing": {
+        "record_secs": 0.0,
+        "transcribe_secs": 0.3,
+        "total_secs": 0.31
+      },
+      "warnings": [
+        {
+          "level": "warning",
+          "code": "PROVIDER_FIELD_NULL",
+          "chunk_index": 0,
+          "detail": "quality fields unavailable"
+        }
+      ]
+    }
+  }
+]
