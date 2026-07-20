@@ -26,6 +26,7 @@ from groq import Groq
 from dotenv import load_dotenv
 
 from api.base_client import BaseSTTClient, ChunkResult, Segment
+from emitter import Emitter
 
 load_dotenv()
 
@@ -50,11 +51,19 @@ class GroqWhisperClient(BaseSTTClient):
 
     # Translation is only supported on the large-v3 model
     TRANSLATION_MODEL = "whisper-large-v3"
+    CAPABILITIES = {
+        "word_timestamps": True,
+        "segment_timestamps": True,
+        "language_detection": True,
+        "quality_metrics": True,
+        "speaker_diarization": False,
+    }
 
     # Free-tier: 7200 audio-sec/hr rolling → 500s × 14 chunks ≈ full window
     CHUNK_SECONDS = 500
 
-    def __init__(self) -> None:
+    def __init__(self, emitter: Optional[Emitter] = None) -> None:
+        super().__init__(emitter)
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
             raise ValueError(
@@ -71,10 +80,6 @@ class GroqWhisperClient(BaseSTTClient):
     ) -> str:
         resolved = super()._resolve_model(model, for_translation)
         if for_translation and resolved != self.TRANSLATION_MODEL:
-            print(
-                f"[groq] '{resolved}' does not support translation — "
-                f"switching to {self.TRANSLATION_MODEL}"
-            )
             return self.TRANSLATION_MODEL
         return resolved
 
@@ -133,17 +138,26 @@ class GroqWhisperClient(BaseSTTClient):
                 err = str(e)
                 if "429" in err or "rate_limit_exceeded" in err:
                     wait = self._parse_retry_wait(err)
-                    print(
-                        f"  [groq] rate limit  chunk {chunk_num}/{total_chunks}  "
-                        f"attempt {attempt}/{max_retries}  "
-                        f"→ sleeping {wait + 1:.0f}s"
+                    self.emitter.warning(
+                        "PROVIDER_RATE_LIMIT",
+                        f"Groq rate limit on chunk {chunk_num}/{total_chunks}; "
+                        f"retry {attempt}/{max_retries} in {wait + 1:.0f}s",
+                        chunk_num - 1,
                     )
                     time.sleep(wait + 1)
                     continue
-                print(f"  [groq] error chunk {chunk_num}: {e}")
+                self.emitter.warning(
+                    "PROVIDER_CHUNK_ERROR",
+                    f"Groq failed chunk {chunk_num}",
+                    chunk_num - 1,
+                )
                 return None
 
-        print(f"  [groq] chunk {chunk_num} failed after {max_retries} retries")
+        self.emitter.warning(
+            "PROVIDER_RETRIES_EXHAUSTED",
+            f"Groq chunk {chunk_num} failed after {max_retries} retries",
+            chunk_num - 1,
+        )
         return None
 
     # -----------------------------------------------------------------------
@@ -165,14 +179,14 @@ class GroqWhisperClient(BaseSTTClient):
         for i, seg in enumerate(getattr(raw, "segments", []) or []):
             segments.append(
                 Segment(
-                    id=getattr(seg, "id", i),
-                    start=float(getattr(seg, "start", 0.0)),
-                    end=float(getattr(seg, "end", 0.0)),
+                    id=_segment_id(seg, i),
+                    start=_field_float(seg, "start") or 0.0,
+                    end=_field_float(seg, "end") or 0.0,
                     text=getattr(seg, "text", ""),
-                    avg_logprob=float(getattr(seg, "avg_logprob", 0.0)),
-                    no_speech_prob=float(getattr(seg, "no_speech_prob", 0.0)),
-                    compression_ratio=float(getattr(seg, "compression_ratio", 1.6)),
-                    tokens=list(getattr(seg, "tokens", [])),
+                    avg_logprob=_field_float(seg, "avg_logprob"),
+                    no_speech_prob=_field_float(seg, "no_speech_prob"),
+                    compression_ratio=_field_float(seg, "compression_ratio"),
+                    tokens=list(getattr(seg, "tokens", None) or []),
                 )
             )
 
@@ -180,7 +194,8 @@ class GroqWhisperClient(BaseSTTClient):
             text=text.strip(),
             segments=segments,
             detected_language=detected_language,
-            duration=float(duration) if duration else None,
+            duration=_to_number(duration),
+            provider_meta=_provider_meta(raw),
         )
 
     # -----------------------------------------------------------------------
@@ -198,3 +213,32 @@ class GroqWhisperClient(BaseSTTClient):
         if match:
             return float(match.group(1) or 0) * 60 + float(match.group(2))
         return 60.0
+
+
+def _to_number(value) -> Optional[float]:
+    """Convert a provider value to float while preserving null."""
+    return None if value is None else float(value)
+
+
+def _field_float(value, field_name: str) -> Optional[float]:
+    """Read one nullable numeric provider field."""
+    return _to_number(getattr(value, field_name, None))
+
+
+def _segment_id(value, fallback: int) -> int:
+    """Read a provider segment id or use accumulation order."""
+    segment_id = getattr(value, "id", None)
+    return segment_id if isinstance(segment_id, int) else fallback
+
+
+def _provider_meta(raw) -> dict:
+    """Extract Groq extension metadata without exposing SDK objects."""
+    value = getattr(raw, "x_groq", None)
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return {"x_groq": value}
+    if hasattr(value, "model_dump"):
+        return {"x_groq": value.model_dump()}
+    request_id = getattr(value, "id", None)
+    return {"x_groq": {"id": request_id}} if request_id is not None else {}

@@ -29,6 +29,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 from api.base_client import BaseSTTClient, ChunkResult, Segment
+from emitter import Emitter
 
 load_dotenv()
 
@@ -49,8 +50,16 @@ class ModelosSTTClient(BaseSTTClient):
     ]
 
     CHUNK_SECONDS = 500
+    CAPABILITIES = {
+        "word_timestamps": False,
+        "segment_timestamps": True,
+        "language_detection": True,
+        "quality_metrics": False,
+        "speaker_diarization": False,
+    }
 
-    def __init__(self) -> None:
+    def __init__(self, emitter: Optional[Emitter] = None) -> None:
+        super().__init__(emitter)
         api_key = os.getenv("MODELOS_AI_KEY")
         if not api_key:
             raise ValueError("MODELOS_AI_KEY not set. Get your key from Modelos AI.")
@@ -111,18 +120,27 @@ class ModelosSTTClient(BaseSTTClient):
                 err = str(e)
                 if "429" in err or "rate_limit" in err.lower():
                     wait = backoff
-                    print(
-                        f"  [modelos] rate limit  chunk {chunk_num}/{total_chunks}  "
-                        f"attempt {attempt}/{max_retries}  "
-                        f"→ sleeping {wait:.0f}s"
+                    self.emitter.warning(
+                        "PROVIDER_RATE_LIMIT",
+                        f"modelos rate limit on chunk {chunk_num}/{total_chunks}; "
+                        f"retry {attempt}/{max_retries} in {wait:.0f}s",
+                        chunk_num - 1,
                     )
                     time.sleep(wait)
                     backoff = min(backoff * 2, 300)  # cap at 5 minutes
                     continue
-                print(f"  [modelos] error chunk {chunk_num}: {e}")
+                self.emitter.warning(
+                    "PROVIDER_CHUNK_ERROR",
+                    f"modelos failed chunk {chunk_num}",
+                    chunk_num - 1,
+                )
                 return None
 
-        print(f"  [modelos] chunk {chunk_num} failed after {max_retries} retries")
+        self.emitter.warning(
+            "PROVIDER_RETRIES_EXHAUSTED",
+            f"modelos chunk {chunk_num} failed after {max_retries} retries",
+            chunk_num - 1,
+        )
         return None
 
     # -----------------------------------------------------------------------
@@ -146,14 +164,14 @@ class ModelosSTTClient(BaseSTTClient):
         for i, seg in enumerate(getattr(raw, "segments", []) or []):
             segments.append(
                 Segment(
-                    id=getattr(seg, "id", i),
-                    start=float(getattr(seg, "start", 0.0)),
-                    end=float(getattr(seg, "end", 0.0)),
+                    id=_segment_id(seg, i),
+                    start=_field_float(seg, "start") or 0.0,
+                    end=_field_float(seg, "end") or 0.0,
                     text=getattr(seg, "text", ""),
-                    avg_logprob=float(getattr(seg, "avg_logprob", 0.0)),
-                    no_speech_prob=float(getattr(seg, "no_speech_prob", 0.0)),
-                    compression_ratio=float(getattr(seg, "compression_ratio", 1.6)),
-                    tokens=list(getattr(seg, "tokens", [])),
+                    avg_logprob=_field_float(seg, "avg_logprob"),
+                    no_speech_prob=_field_float(seg, "no_speech_prob"),
+                    compression_ratio=_field_float(seg, "compression_ratio"),
+                    tokens=list(getattr(seg, "tokens", None) or []),
                 )
             )
 
@@ -161,5 +179,21 @@ class ModelosSTTClient(BaseSTTClient):
             text=text.strip(),
             segments=segments,
             detected_language=detected_language,
-            duration=float(duration) if duration else None,
+            duration=_to_number(duration),
         )
+
+
+def _to_number(value) -> Optional[float]:
+    """Convert a provider value to float while preserving null."""
+    return None if value is None else float(value)
+
+
+def _field_float(value, field_name: str) -> Optional[float]:
+    """Read one nullable numeric provider field."""
+    return _to_number(getattr(value, field_name, None))
+
+
+def _segment_id(value, fallback: int) -> int:
+    """Read a provider segment id or use accumulation order."""
+    segment_id = getattr(value, "id", None)
+    return segment_id if isinstance(segment_id, int) else fallback

@@ -46,6 +46,7 @@ def test_groq_language_returns_full_word(groq_verbose_response):
     result = client._parse_response(groq_verbose_response, verbose=True)
 
     assert result.detected_language == "English"
+    assert result.provider_meta == {"x_groq": {"id": "req_abc123"}}
 
 
 def test_groq_text_mode_parse():
