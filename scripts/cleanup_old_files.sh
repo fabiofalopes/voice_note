@@ -52,5 +52,5 @@ fi
 
 echo ""
 echo "✅ Cleanup complete!"
-echo "📁 Preserved assets are in future_features/"
+echo "📁 Preserved assets are in internal/abandoned/future_features/"
 echo "🎯 Core functionality is now in voice_transcriber.py"

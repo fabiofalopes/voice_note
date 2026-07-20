@@ -1,6 +1,6 @@
 # 🎤 VoiceNote - Automatic Compression Feature
 
-> **⚠️ ABANDONED (2026-07-19).** Abandoned after Phase 1 script. Audio compression / VAD / noise reduction explicitly excluded from v1.0 — see [`AGENTS.md`](./AGENTS.md) §5 Non-goals.
+> **⚠️ ABANDONED (2026-07-19).** Abandoned after Phase 1 script. Audio compression / VAD / noise reduction explicitly excluded from v1.0 — see [`AGENTS.md`](../../AGENTS.md) §5 Non-goals.
 
 **Status:** 📝 Idea/Backlog
 **Created:** 2026-04-03

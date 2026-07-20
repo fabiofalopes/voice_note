@@ -3,7 +3,7 @@
 > **The output contract is the heart of voice_note v1.0.**
 > This document specifies the JSON envelope, NDJSON event stream, exit codes, versioning rules, provider normalisation, and Stream A Definition of Done.
 > For agent operating rules: see [../AGENTS.md](../AGENTS.md).
-> For project history/state/decisions: see [../MEMORY.md](../MEMORY.md).
+> For project history/state/decisions: see [../internal/MEMORY.md](../internal/MEMORY.md).
 
 **`schema_version: "1.0"`** — Frozen 2026-07-20 after Stream A DoD passed.
 
@@ -533,4 +533,4 @@ def normalize_language(raw: str | None) -> str | None:
 
 ---
 
-*End of docs/CONTRACT.md. For agent operating rules: [../AGENTS.md](../AGENTS.md). For project history/state/decisions: [../MEMORY.md](../MEMORY.md).*
+*End of docs/CONTRACT.md. For agent operating rules: [../AGENTS.md](../AGENTS.md). For project history/state/decisions: see [../internal/MEMORY.md](../internal/MEMORY.md).*

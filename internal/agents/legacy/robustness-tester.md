@@ -82,7 +82,7 @@ Report findings as:
 
 ## Project Context
 
-**Reference**: `docs/reports/signal_handling_corruption_analysis.md` documents known issues.
+**Reference**: `../../reports/signal_handling_corruption_analysis.md` documents known issues.
 
 Focus areas:
 - Signal handling edge cases

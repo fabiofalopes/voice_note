@@ -1,6 +1,6 @@
 # 🎯 RELIABILITY FIRST - Core Project Principle
 
-> **⚠️ PARTIALLY DRIFTED (2026-07-19).** Core philosophy valid. Factual claim (robust is still opt-in, not default) is accurate. **However**: the urgency framing ("UNACCEPTABLE", top priority) is at odds with current sequencing — Stream A (output contract) is the v1.0 ship target, Stream D (reliability flip) is parallel/optional. See [`AGENTS.md`](./AGENTS.md) §3. References to `RELIABILITY_FIX.md` below are stale (that doc is itself historical).
+> **⚠️ PARTIALLY DRIFTED (2026-07-19).** Core philosophy valid. Factual claim (robust is still opt-in, not default) is accurate. **However**: the urgency framing ("UNACCEPTABLE", top priority) is at odds with current sequencing — Stream A (output contract) is the v1.0 ship target, Stream D (reliability flip) is parallel/optional. See [`AGENTS.md`](../AGENTS.md) §3. References to `RELIABILITY_FIX.md` below are stale (that doc is itself historical).
 
 ## The Non-Negotiable Standard
 
@@ -172,7 +172,7 @@ vn  # Robust by default
 
 For the next session working on voice_note:
 
-- [ ] Read [`AGENTS.md`](./AGENTS.md) §3 Stream D scope + DoD (current authority)
+- [ ] Read [`AGENTS.md`](../AGENTS.md) §3 Stream D scope + DoD (current authority)
 - [ ] Read `ROBUST_RECORDING.md` for user guide (current opt-in behaviour)
 - [ ] Review `src/audio_processing/robust_recorder.py` implementation
 - [ ] Review `src/audio_processing/recorder.py` (old implementation)
@@ -201,8 +201,8 @@ An important meeting recording should NOT disappear because of a process crash.
 
 ## References
 
-- **Current authority**: [`AGENTS.md`](./AGENTS.md) §3 Stream D + [`MEMORY.md`](./MEMORY.md)
-- **Technical analysis (historical)**: `RELIABILITY_FIX.md` ⚠️ stale — see [`docs/reports/signal_handling_corruption_analysis.md`](./docs/reports/signal_handling_corruption_analysis.md) instead
+- **Current authority**: [`AGENTS.md`](../AGENTS.md) §3 Stream D + [`MEMORY.md`](./MEMORY.md)
+- **Technical analysis (historical)**: `RELIABILITY_FIX.md` ⚠️ stale — see [`reports/signal_handling_corruption_analysis.md`](./reports/signal_handling_corruption_analysis.md) instead
 - **User guide**: `ROBUST_RECORDING.md`
 - **Implementation**: `src/audio_processing/robust_recorder.py`
 - **Current CLI**: `src/cli.py`

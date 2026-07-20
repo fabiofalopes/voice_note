@@ -1,6 +1,6 @@
 # 🎯 Audio Optimization Vision & Mission
 
-> **⚠️ ABANDONED (2026-07-19).** Zero implementation. Audio compression / VAD / noise reduction explicitly excluded from v1.0 — see [`AGENTS.md`](./AGENTS.md) §5 Non-goals. Do not resurrect.
+> **⚠️ ABANDONED (2026-07-19).** Zero implementation. Audio compression / VAD / noise reduction explicitly excluded from v1.0 — see [`AGENTS.md`](../../AGENTS.md) §5 Non-goals. Do not resurrect.
 
 ## Our Core Mission
 **Make VoiceNote the most efficient voice transcription system** by sending optimized audio to GROQ API at the lowest cost while maintaining quality. Keep it simple, keep it working.

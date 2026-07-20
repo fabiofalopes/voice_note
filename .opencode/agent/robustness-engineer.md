@@ -169,7 +169,7 @@ For every feature/code path:
 
 | Document | Content |
 |----------|---------|
-| `docs/reports/signal_handling_corruption_analysis.md` | Known issues |
+| `internal/reports/signal_handling_corruption_analysis.md` | Known issues |
 | `.opencode/agent-environment.json` | Current state, known issues |
 | `AGENTS.md` (repo root) | Stream D scope + DoD |
 

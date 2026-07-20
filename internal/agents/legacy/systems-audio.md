@@ -86,7 +86,7 @@ You are a **systems-level audio engineering specialist** focused on cross-platfo
 
 ## Project Context
 
-**Reference**: `docs/reports/signal_handling_corruption_analysis.md` for current issues and fixes.
+**Reference**: `../../reports/signal_handling_corruption_analysis.md` for current issues and fixes.
 
 The consulting report contains:
 - Root cause analysis of Ctrl+C corruption

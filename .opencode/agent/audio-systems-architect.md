@@ -44,7 +44,7 @@ permission:
 
 > **⚠️ DEFERS TO AGENTS.md (2026-07-19).** This agent predates the v1.0 master prompt split. For all execution decisions, scope, non-goals, and operating protocol, defer to **`/AGENTS.md`** at repo root. For state/history see `/MEMORY.md`. For contract spec see `/docs/CONTRACT.md`.
 > **This agent's role**: scoped to **Stream D (reliability flip)** work — signal handling, atomic WAV writes, terminal state recovery. Also relevant for Pre-Stream-A Step 1 (committing `robust_recorder.py`).
-> **Updates needed**: (a) replace `os.rename()` references with `os.replace()` (atomic on POSIX per docs/CONTRACT.md §8); (b) drop reference to `future_features/system_robustness_roadmap.md` (superseded — see MEMORY.md §9.3).
+> **Updates needed**: (a) replace `os.rename()` references with `os.replace()` (atomic on POSIX per docs/CONTRACT.md §8); (b) drop reference to `internal/abandoned/future_features/system_robustness_roadmap.md` (superseded — see internal/MEMORY.md §9.3).
 
 **Version**: 2.0.0  
 **Last Updated**: 2025-12-07
@@ -136,7 +136,7 @@ Read: .opencode/agent-environment.json
 
 | Document | Content |
 |----------|---------|
-| `docs/reports/signal_handling_corruption_analysis.md` | Root cause analysis, fixes |
+| `internal/reports/signal_handling_corruption_analysis.md` | Root cause analysis, fixes |
 | `docs/audio-system.md` | Audio architecture |
 | `AGENTS.md` (repo root) | Stream D scope + DoD |
 | `.opencode/agent-environment.json` | Current state (READ FIRST) |

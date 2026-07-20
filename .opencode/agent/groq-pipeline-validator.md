@@ -158,7 +158,7 @@ def transcribe_with_retry(audio_file, max_retries=3):
 | Document | Content |
 |----------|---------|
 | `src/api/groq_client.py` | Current implementation |
-| `future_features/prompts/console.groq.com-docs-speech-text.md` | API docs |
+| `internal/abandoned/future_features/prompts/console.groq.com-docs-speech-text.md` | API docs |
 | `.opencode/agent-environment.json` | Current state (READ FIRST) |
 
 ## Anti-Patterns

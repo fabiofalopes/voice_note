@@ -1,10 +1,10 @@
 # VoiceNote Deep Research Prompts: Advanced Audio Preprocessing for ASR
 
-> **⚠️ SPECULATIVE / NEVER ACTED ON (2026-07-19).** Audio preprocessing / compression / VAD explicitly excluded from v1.0 — see [`AGENTS.md`](./AGENTS.md) §5 Non-goals. Do not act on these prompts without explicit user confirmation.
+> **⚠️ SPECULATIVE / NEVER ACTED ON (2026-07-19).** Audio preprocessing / compression / VAD explicitly excluded from v1.0 — see [`AGENTS.md`](../../AGENTS.md) §5 Non-goals. Do not act on these prompts without explicit user confirmation.
 
 This file contains deep research prompts for emerging areas in audio preprocessing to enhance speech recognition for VoiceNote. Each section provides a comprehensive prompt designed for deep research agents to explore specific topics in depth. These prompts are crafted to leverage available tools like web search, academic paper analysis, code repository exploration, and pattern-based reasoning (e.g., Fabric's deep research optimizing pattern).
 
-The prompts assume access to the same context as this project: VoiceNote's focus on optimizing voice input for transcription (prior research now archived in `audio_preprocessing_research.md` — abandoned, see [`AGENTS.md`](./AGENTS.md) §5), and the goal of making voices "pop" and cut through better for better ASR performance.
+The prompts assume access to the same context as this project: VoiceNote's focus on optimizing voice input for transcription (prior research now archived in `audio_preprocessing_research.md` — abandoned, see [`AGENTS.md`](../../AGENTS.md) §5), and the goal of making voices "pop" and cut through better for better ASR performance.
 
 ## Prompt 1: Automatic Audio Mixing for ASR
 

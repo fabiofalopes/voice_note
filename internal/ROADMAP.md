@@ -1,6 +1,6 @@
 # voice_note — STT Pipeline Roadmap
 
-> **ARCHIVED (2026-07-20).** This Phase 0-8 plan is retained only for historical context. The authoritative roadmap is the Stream A/B/C/D/E/F model in [`AGENTS.md`](./AGENTS.md) §3-4, with current implementation and validation state in [`MEMORY.md`](./MEMORY.md). Fireworks has been removed and Stream A contract v1.0 shipped on 2026-07-20 after all 17 DoD items passed.
+> **ARCHIVED (2026-07-20).** This Phase 0-8 plan is retained only for historical context. The authoritative roadmap is the Stream A/B/C/D/E/F model in [`AGENTS.md`](../AGENTS.md) §3-4, with current implementation and validation state in [`MEMORY.md`](./MEMORY.md). Fireworks has been removed and Stream A contract v1.0 shipped on 2026-07-20 after all 17 DoD items passed.
 
 This document is not authoritative for current work.
 

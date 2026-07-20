@@ -17,7 +17,7 @@ voice_note is a **contract-first CLI** for voice recording + transcription. Stre
 **Three authoritative docs (read in this order if unfamiliar):**
 1. [`AGENTS.md`](../AGENTS.md) — agent rules + scope + execution environment + non-goals (loaded automatically)
 2. [`docs/CONTRACT.md`](../docs/CONTRACT.md) — the output contract spec (load when working Stream A)
-3. [`MEMORY.md`](../MEMORY.md) — state, history, validation, decisions (load when context needed)
+3. [`internal/MEMORY.md`](../internal/MEMORY.md) — state, history, validation, decisions (load when context needed)
 
 ## Current phase: Stream A shipped, commit pending
 
@@ -28,8 +28,8 @@ with a later stream and do not commit without an explicit user request.
 
 Resume from:
 
-- [`docs/handoffs/2026-07-21-stream-a-live-validation.md`](../docs/handoffs/2026-07-21-stream-a-live-validation.md)
-- [`MEMORY.md §2.3`](../MEMORY.md#23-baseline-commit-status)
+- [`internal/handoffs/2026-07-21-stream-a-live-validation.md`](../internal/handoffs/2026-07-21-stream-a-live-validation.md)
+- [`internal/MEMORY.md §2.3`](../internal/MEMORY.md#23-baseline-commit-status)
 
 Treat the completed handoff and `MEMORY.md §11` as the validation evidence.
 
@@ -53,7 +53,7 @@ test -f .env && echo ".env present"              # API keys available
 # - Check .opencode/agent-environment.json for runtime state
 
 # 4. Preserve the completed Stream A cluster
-#    - Read docs/handoffs/2026-07-21-stream-a-live-validation.md
+#    - Read internal/handoffs/2026-07-21-stream-a-live-validation.md
 #    - Do not mix later-stream changes into the uncommitted Stream A work
 #    - Commit only when the user explicitly requests it
 ```
@@ -116,7 +116,7 @@ Before ending a session:
 2. If work is complete and verified → commit only when explicitly requested, following AGENTS.md §6.4
 3. If work is incomplete → ensure files are in a recoverable state on disk
 4. Update MEMORY.md §12 Changelog if a meaningful unit was completed
-5. (Optional) Create a session handoff note in `docs/handoffs/` for complex in-progress state
+5. (Optional) Create a session handoff note in `internal/handoffs/` for complex in-progress state
 
 ---
 

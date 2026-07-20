@@ -107,7 +107,7 @@ scripts/               # Setup and utility scripts
 - **[Troubleshooting Guide](docs/troubleshooting.md)** - Common issues and solutions
 - **[Output Contract](docs/CONTRACT.md)** - voice_note v1.0 contract spec (Stream A reference)
 - **[Agent Rules](AGENTS.md)** - Operating rules for any agent touching voice_note code
-- **[Project Memory](MEMORY.md)** - State, history, decisions, validation log
+- **[Project Memory](internal/MEMORY.md)** - State, history, decisions, validation log
 
 ## Aliases
 

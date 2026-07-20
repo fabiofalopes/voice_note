@@ -14,6 +14,6 @@ This directory contains detailed documentation for the Voice Transcriber project
 
 - [Main README](../README.md) - Project overview and usage
 - [Project rules](../AGENTS.md) - Agent operating rules for voice_note
-- [Project memory](../MEMORY.md) - State, history, decisions, validation log
+- [Project memory](../internal/MEMORY.md) - State, history, decisions, validation log
 - [Requirements](../requirements.txt) - Dependencies
 - [Scripts](../scripts/) - Setup and utility scripts

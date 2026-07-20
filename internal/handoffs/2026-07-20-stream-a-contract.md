@@ -144,4 +144,4 @@ See **docs/CONTRACT.md §Stream A Definition of Done**. Highlights:
 
 ---
 
-*End of handoff. For agent operating rules: [AGENTS.md](../../AGENTS.md). For project state/history: [MEMORY.md](../../MEMORY.md). For contract spec: [docs/CONTRACT.md](../CONTRACT.md).*
+*End of handoff. For agent operating rules: [AGENTS.md](../../AGENTS.md). For project state/history: [MEMORY.md](../MEMORY.md). For contract spec: [docs/CONTRACT.md](../../docs/CONTRACT.md).*

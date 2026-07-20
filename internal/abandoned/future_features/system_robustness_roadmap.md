@@ -1,6 +1,6 @@
 # System Robustness & Optimization Roadmap
 
-> **⚠️ ASPIRATIONAL / SUPERSEDED (2026-07-19).** Zero checkboxes ticked. Replaced by Stream D in [`AGENTS.md`](../AGENTS.md) §3. Do not act on this document — see [`MEMORY.md`](../MEMORY.md) §9.3 for context.
+> **⚠️ ASPIRATIONAL / SUPERSEDED (2026-07-19).** Zero checkboxes ticked. Replaced by Stream D in [`AGENTS.md`](../../../AGENTS.md) §3. Do not act on this document — see [`MEMORY.md`](../../MEMORY.md) §9.3 for context.
 
 ## Vision Statement
 

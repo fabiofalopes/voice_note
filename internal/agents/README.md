@@ -2,10 +2,12 @@
 
 > **⚠️ AUTHORITATIVE DOCS MOVED (2026-07-19).** Strategy, rules, and contract spec are now at the repo root:
 > - **`/AGENTS.md`** — agent operating rules, scope, non-goals, protocol (read every session)
-> - **/MEMORY.md** — state, history, decisions, validation log (loaded when context needed)
+> - **/internal/MEMORY.md** — state, history, decisions, validation log (loaded when context needed)
 > - **/docs/CONTRACT.md** — output contract spec (loaded for Stream A work)
 >
-> The `.opencode/agent/*.md` files below are **partially stale** — each has a "defer to AGENTS.md" banner. Full resync deferred until Stream A starts.
+> The `.opencode/agent/*.md` files (still in `.opencode/agent/`) are **partially stale** — each has a "defer to AGENTS.md" banner. Full resync deferred until Stream A starts.
+>
+> **Note (2026-07-20):** The architecture diagram below describes `.opencode/` as it was before the repo reorg. Reference material (legacy agents, hub-excerpts, agentic-inspiration, this README) has since moved to `internal/agents/`. Live `.opencode/agent/*.md` + `agent-environment.json` remain in place.
 
 Production-grade, state-aware agent registry for systems-level audio engineering.
 
@@ -59,7 +61,7 @@ Production-grade, state-aware agent registry for systems-level audio engineering
 
 ## Key Reference
 
-**Consulting report**: `docs/reports/signal_handling_corruption_analysis.md`
+**Consulting report**: `../reports/signal_handling_corruption_analysis.md`
 
 Contains deep technical analysis of current issues with recommended fixes. Agents reference this report for task-specific context.
 

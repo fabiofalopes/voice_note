@@ -1,9 +1,9 @@
 # AGENTS.md — voice_note
 
 > **Read this file end-to-end before touching voice_note code. It is authoritative.**
-> For history, decisions, and validation evidence: see [MEMORY.md](./MEMORY.md).
+> For history, decisions, and validation evidence: see [MEMORY.md](./internal/MEMORY.md).
 > For the output contract spec (Stream A reference): see [docs/CONTRACT.md](./docs/CONTRACT.md).
-> For stream-sequencing history and supersession: see [MEMORY.md §Document relationships](./MEMORY.md#document-relationships).
+> For stream-sequencing history and supersession: see [MEMORY.md §Document relationships](./internal/MEMORY.md#document-relationships).
 
 ---
 
@@ -45,7 +45,7 @@ test -f .env && echo ".env present"              # API keys available
 
 ### Pre-Stream A — Foundation (MUST complete first, hard prerequisite)
 
-**Step 1 — Commit baseline.** ✅ Completed 2026-07-20. The provider-abstraction layer, the reliability layer, and all strategy docs were committed in atomic `pre-a(...)` chunks — see [MEMORY.md §2.3 Baseline commit status](./MEMORY.md#23-baseline-commit-status) for the commit list. The Fireworks dead-code baseline committed there has since been removed (user decision 2026-07-18, removed 2026-07-20).
+**Step 1 — Commit baseline.** ✅ Completed 2026-07-20. The provider-abstraction layer, the reliability layer, and all strategy docs were committed in atomic `pre-a(...)` chunks — see [MEMORY.md §2.3 Baseline commit status](./internal/MEMORY.md#23-baseline-commit-status) for the commit list. The Fireworks dead-code baseline committed there has since been removed (user decision 2026-07-18, removed 2026-07-20).
 
 **Step 2 — Write tests.** ✅ Completed 2026-07-20. The pytest executable-spec baseline now covers provider parsing, normalisation, recorder recovery, contract models, emitters, CLI errors, atomic JSON identity, all-silent handling, and interrupts. Current local status: 29 passing tests.
 
@@ -60,7 +60,7 @@ These tests are the executable spec for the contract. They must fail meaningfull
 
 ### Stream A — Output Contract (✅ shipped 2026-07-20)
 
-**Current status (2026-07-20):** All 17 DoD items passed, including live Groq and modelos success paths. Contract v1.0 is frozen. Validation evidence is recorded in [MEMORY.md §11](./MEMORY.md#11-validation-log-empirically-verified) and [the completed handoff](./docs/handoffs/2026-07-21-stream-a-live-validation.md).
+**Current status (2026-07-20):** All 17 DoD items passed, including live Groq and modelos success paths. Contract v1.0 is frozen. Validation evidence is recorded in [MEMORY.md §11](./internal/MEMORY.md#11-validation-log-empirically-verified) and [the completed handoff](./internal/handoffs/2026-07-21-stream-a-live-validation.md).
 
 **Goal**: Implement [docs/CONTRACT.md](./docs/CONTRACT.md) in code. Replace every `print()` in `src/cli.py` and `src/api/base_client.py` with contract-aware emitters.
 
@@ -97,11 +97,11 @@ Closes the 15-month-old CRITICAL handoff. No `vn` invocation should be able to l
 
 **Files to touch:**
 - `src/cli.py` — flip default: `robust=True`. Add `--legacy` flag (opt-IN to old recorder, with stderr warning on every use).
-- `src/audio_processing/robust_recorder.py` — apply unfixed recommendations from `docs/reports/signal_handling_corruption_analysis.md`: explicit `signal.signal(SIGINT, …)` handler setting `_shutdown_requested` flag, atomic WAV writes (write-to-tmp + `os.replace`), terminal state save/restore around PyAudio sessions.
+- `src/audio_processing/robust_recorder.py` — apply unfixed recommendations from `internal/reports/signal_handling_corruption_analysis.md`: explicit `signal.signal(SIGINT, …)` handler setting `_shutdown_requested` flag, atomic WAV writes (write-to-tmp + `os.replace`), terminal state save/restore around PyAudio sessions.
 - `.HANDOFF_NEXT.md` — mark CLOSED once default is flipped.
-- `RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` — update to reflect "robust is now default; `--legacy` available".
+- `internal/RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` — update to reflect "robust is now default; `--legacy` available".
 
-**DoD:** See [MEMORY.md](./MEMORY.md) or original Stream D spec.
+**DoD:** See [MEMORY.md](./internal/MEMORY.md) or original Stream D spec.
 
 ### Deferred streams
 
@@ -178,10 +178,10 @@ Stream B (packaging)     Stream C (provider registry)     Stream D (reliability 
 13. **Run the stream's Definition of Done checklist verbatim.** Each box must be demonstrably true.
 14. **Run `lsp_diagnostics` on every changed file** and resolve all errors your change introduced.
 15. **Run the tests.** All tests in `tests/` must pass.
-16. **Update `ROADMAP.md`** if your stream completed a Phase — mark `[x]` and date it.
-17. **If you created new strategy/architecture docs at repo root, you did the wrong thing** — edit AGENTS.md / MEMORY.md / docs/CONTRACT.md instead. New `.md` files at repo root are a smell.
-18. **If you touched the contract, bump `schema_version`** and document the change in [MEMORY.md §Changelog](./MEMORY.md#12-changelog).
-19. **Write a handoff prompt for the next session** at `docs/handoffs/YYYY-MM-DD-<task-slug>.md`. Date-stamp with the *next* session's expected start date. Use the most recent handoff in `docs/handoffs/` as the template. This is non-negotiable for multi-session continuity — state lives in files, not session context.
+16. **Update `internal/ROADMAP.md`** if your stream completed a Phase — mark `[x]` and date it.
+17. **If you created new strategy/architecture docs at repo root, you did the wrong thing** — edit AGENTS.md / internal/MEMORY.md / docs/CONTRACT.md instead. New `.md` files at repo root are a smell.
+18. **If you touched the contract, bump `schema_version`** and document the change in [MEMORY.md §Changelog](./internal/MEMORY.md#12-changelog).
+19. **Write a handoff prompt for the next session** at `internal/handoffs/YYYY-MM-DD-<task-slug>.md`. Date-stamp with the *next* session's expected start date. Use the most recent handoff in `internal/handoffs/` as the template. This is non-negotiable for multi-session continuity — state lives in files, not session context.
 
 ### 6.4 Commit message convention
 
@@ -211,7 +211,7 @@ Stream B (packaging)     Stream C (provider registry)     Stream D (reliability 
 2. **No new provider** until Stream C (registry) lands. Adding MLX (Stream E) requires the registry.
 3. **No refactor of `recorder.py` / `utils.py`** — they carry documented pre-existing LSP errors. Leave them unless Stream D explicitly requires touching them.
 4. **No reintroduction of local Whisper** until Stream E (MLX) and only via the provider registry, never as a special case.
-5. **No new top-level strategy `.md`** — edit AGENTS.md / MEMORY.md / docs/CONTRACT.md. All prior strategy docs in Obsidian are superseded.
+5. **No new top-level strategy `.md`** — edit AGENTS.md / internal/MEMORY.md / docs/CONTRACT.md. All prior strategy docs in Obsidian are superseded.
 6. **No editing `config.py` to "fix" it** — it gets *deleted* in Stream C, replaced by provider-aware config.
 
 ---
@@ -221,14 +221,14 @@ Stream B (packaging)     Stream C (provider registry)     Stream D (reliability 
 ### 8.1 What it IS
 - The single authoritative source for agent operating rules in voice_note.
 - Short enough to be read every session.
-- Pointers to deeper reference material (MEMORY.md for history/state, docs/CONTRACT.md for spec).
+- Pointers to deeper reference material (internal/MEMORY.md for history/state, docs/CONTRACT.md for spec).
 
 ### 8.2 What it is NOT
 - Not the contract spec. That's [docs/CONTRACT.md](./docs/CONTRACT.md).
-- Not the history/state file. That's [MEMORY.md](./MEMORY.md).
+- Not the history/state file. That's [MEMORY.md](./internal/MEMORY.md).
 - Not a code review or tutorial.
 - Not an excuse to delay shipping. v1.0 ships when Stream A DoD passes.
 
 ---
 
-*This file replaces the 880-line master prompt for agent operating rules. Full history of how this file came to be: see [MEMORY.md §Changelog](./MEMORY.md#12-changelog).*
+*This file replaces the 880-line master prompt for agent operating rules. Full history of how this file came to be: see [MEMORY.md §Changelog](./internal/MEMORY.md#12-changelog).*

@@ -38,6 +38,10 @@ dist/
 # Testing
 .pytest_cache/
 .coverage
+.ruff_cache/
+
+# OpenCode SDK lockfile (auto-generated, not versioned)
+.opencode/package-lock.json
 
 # API keys and secrets
 # config/config.py

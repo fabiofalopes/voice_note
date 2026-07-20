@@ -2,8 +2,8 @@
 
 > **Project state, history, decisions, and validation evidence.**
 > Read this when you need context on *why* things are the way they are, or *what was decided*.
-> For agent operating rules: see [AGENTS.md](./AGENTS.md).
-> For the output contract spec: see [docs/CONTRACT.md](./docs/CONTRACT.md).
+> For agent operating rules: see [AGENTS.md](../AGENTS.md).
+> For the output contract spec: see [docs/CONTRACT.md](../docs/CONTRACT.md).
 
 ---
 
@@ -21,7 +21,7 @@ This conviction — contract-first — survived everything that followed. It is 
 
 ### 1.2 Lessons that shaped the project
 
-1. **Local Whisper was tried and removed.** Commit `5bce6f5` deleted an entire local-inference stack (faster-whisper, daemon, benchmarking). Rationale captured in `future_features/local_inference_architecture_decision.md`: complexity was disproportionate to value, APIs were faster, installation friction was too high. **This decision is final** — do not reintroduce local inference until the CLI contract is solid (Stream E for the future-MLX path).
+1. **Local Whisper was tried and removed.** Commit `5bce6f5` deleted an entire local-inference stack (faster-whisper, daemon, benchmarking). Rationale captured in `abandoned/future_features/local_inference_architecture_decision.md`: complexity was disproportionate to value, APIs were faster, installation friction was too high. **This decision is final** — do not reintroduce local inference until the CLI contract is solid (Stream E for the future-MLX path).
 
 2. **Groq became the default provider** because it was free, fast, and worked. Empirically verified (2026-07-18, HTTP 200 in 0.84s, all fields populated including word timestamps).
 
@@ -75,7 +75,7 @@ Descriptive reality, not aspiration. Every claim grounded in code on disk.
 | **Dead `src/config.py`** | Exports `get_groq_api_key()` etc.; **0 callers**. Clients call `os.getenv()` directly with redundant `load_dotenv()` | Confusing; violates single-source-of-truth |
 | **Hardcoded provider dispatch** | `cli.py`: `if/elif/else` chain over the 2 providers | Adding a provider requires editing the dispatcher |
 | **`--robust` not default** | `cli.py` L162: `if args.robust:` (default `False`) | Every recording without the flag risks total data loss on device failure |
-| **Ctrl+C corruption (unfixed)** | `docs/reports/signal_handling_corruption_analysis.md` recommendations not applied | Terminal state corruption + possible file truncation on interrupt |
+| **Ctrl+C corruption (unfixed)** | `reports/signal_handling_corruption_analysis.md` recommendations not applied | Terminal state corruption + possible file truncation on interrupt |
 
 ### 2.3 Baseline commit status
 
@@ -156,7 +156,7 @@ Closes the 15-month-old CRITICAL handoff (`.HANDOFF_NEXT.md`, dated 2025-04-02).
 
 **Files to touch:**
 - `src/cli.py` — flip default: `robust=True`. Add `--legacy` flag (opt-IN to old recorder, with stderr warning on every use).
-- `src/audio_processing/robust_recorder.py` — apply unfixed recommendations from `docs/reports/signal_handling_corruption_analysis.md`: explicit `signal.signal(SIGINT, …)` handler setting `_shutdown_requested` flag, atomic WAV writes (write-to-tmp + `os.replace`), terminal state save/restore around PyAudio sessions.
+- `src/audio_processing/robust_recorder.py` — apply unfixed recommendations from `reports/signal_handling_corruption_analysis.md`: explicit `signal.signal(SIGINT, …)` handler setting `_shutdown_requested` flag, atomic WAV writes (write-to-tmp + `os.replace`), terminal state save/restore around PyAudio sessions.
 - `.HANDOFF_NEXT.md` — mark CLOSED once default is flipped.
 - `RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` — update to reflect "robust is now default; `--legacy` available".
 
@@ -224,7 +224,7 @@ v1 (2024-05-22) said "we need a contract." v2.0–v2.3 (2026-07-18) wrote that c
 
 ## 8. The one-paragraph pitch
 
-> `voice_note` is a Python CLI that records and transcribes audio via cloud Whisper providers (Groq, self-hosted LiteLLM gateway at modelos.ai.ulusofona.pt). It has a provider abstraction (`BaseSTTClient` ABC, ~579 LOC), a robust chunked pipeline with crash-safe resume (`robust_recorder.py`, 471 LOC), and 2 working providers — all currently uncommitted. What it lacks is a **stable output contract**: today every status line is unparseable human text, exit codes are binary, and there are zero tests. The contract spec (see [docs/CONTRACT.md](./docs/CONTRACT.md)) specifies JSON/NDJSON output, Pydantic v2 models, 5 NDJSON event types, 4 public exit codes + internal sysexits set, declarative capabilities, transactional writes, null pass-through for provider quality fields. The provider normalisation layer makes it provider-agnostic. A pruned plan ships v1.0 after committing the baseline and writing ~10 tests. Local MLX execution, packaging, provider registry, and UI are all deferred. The strategy phase ends here. What remains is execution.
+> `voice_note` is a Python CLI that records and transcribes audio via cloud Whisper providers (Groq, self-hosted LiteLLM gateway at modelos.ai.ulusofona.pt). It has a provider abstraction (`BaseSTTClient` ABC, ~579 LOC), a robust chunked pipeline with crash-safe resume (`robust_recorder.py`, 471 LOC), and 2 working providers — all currently uncommitted. What it lacks is a **stable output contract**: today every status line is unparseable human text, exit codes are binary, and there are zero tests. The contract spec (see [docs/CONTRACT.md](../docs/CONTRACT.md)) specifies JSON/NDJSON output, Pydantic v2 models, 5 NDJSON event types, 4 public exit codes + internal sysexits set, declarative capabilities, transactional writes, null pass-through for provider quality fields. The provider normalisation layer makes it provider-agnostic. A pruned plan ships v1.0 after committing the baseline and writing ~10 tests. Local MLX execution, packaging, provider registry, and UI are all deferred. The strategy phase ends here. What remains is execution.
 
 ---
 
@@ -244,8 +244,8 @@ Every agent working on voice_note MUST consult this table before citing or actin
 | `docs/audio-system.md` | Matches current `recorder.py` architecture |
 | `docs/pipewire-integration.md` | Matches current Linux recording path |
 | `docs/troubleshooting.md` | Current known user-facing issues |
-| `docs/reports/signal_handling_corruption_analysis.md` | Unfixed; recommendations feed Stream D |
-| `future_features/local_inference_architecture_decision.md` | Decision fully executed; informs Stream E boundary |
+| `reports/signal_handling_corruption_analysis.md` | Unfixed; recommendations feed Stream D |
+| `abandoned/future_features/local_inference_architecture_decision.md` | Decision fully executed; informs Stream E boundary |
 | `.opencode/agent-environment.json` | Ground-truth environment state file |
 | `.opencode/agent/*.md` (5 active agents) | Current agent registry — some stale, see agent file banners |
 
@@ -262,14 +262,14 @@ Every agent working on voice_note MUST consult this table before citing or actin
 |---|---|
 | `RELIABILITY_FIX.md` | Historical — describes what was built; superseded by `robust_recorder.py` |
 | `.HANDOFF_NEXT.md` | 15 months stale; closes when Stream D lands |
-| `audio_optimization_plan.md` | Abandoned — zero implementation |
-| `audio_preprocessing_research.md` | Pure research — zero implementation |
-| `voice_note_deep_research_prompts.md` | Speculative — never acted on |
-| `FUTURE-automated-compression-feature.md` | Abandoned after Phase 1 script |
-| `future_features/system_robustness_roadmap.md` | Aspirational — zero checkboxes ticked; superseded by AGENTS.md Stream D |
-| `future_features/analyzer_insights.md` + `future_features/prompts/` | Historical reference only — old LLM post-processing, removed |
-| `docs/development-notes.md` | Pre-dates robust recorder and multi-provider era; useful for archaeology only |
-| `.opencode/agent/legacy/OPTIMIZED_PROMPT.md` | Proposed agent renames + `PROJECT_STATE.md` creation — never executed; superseded by current `.opencode/agent/` setup + AGENTS.md/MEMORY.md |
+| `abandoned/audio_optimization_plan.md` | Abandoned — zero implementation |
+| `abandoned/audio_preprocessing_research.md` | Pure research — zero implementation |
+| `abandoned/voice_note_deep_research_prompts.md` | Speculative — never acted on |
+| `abandoned/FUTURE-automated-compression-feature.md` | Abandoned after Phase 1 script |
+| `abandoned/future_features/system_robustness_roadmap.md` | Aspirational — zero checkboxes ticked; superseded by AGENTS.md Stream D |
+| `abandoned/future_features/analyzer_insights.md` + `abandoned/future_features/prompts/` | Historical reference only — old LLM post-processing, removed |
+| `development-notes.md` | Pre-dates robust recorder and multi-provider era; useful for archaeology only |
+| `agents/legacy/OPTIMIZED_PROMPT.md` | Proposed agent renames + `PROJECT_STATE.md` creation — never executed; superseded by current `.opencode/agent/` setup + AGENTS.md/MEMORY.md |
 
 ---
 
@@ -289,13 +289,13 @@ Every agent working on voice_note MUST consult this table before citing or actin
 | `ROADMAP.md` | Phase 0–8 plan | **Active** for phase tracking; AGENTS.md §5 defers most phases |
 | `README.md` | User-facing truth about current CLI | **Active** — update in Stream A |
 | `docs/audio-system.md`, `docs/pipewire-integration.md`, `docs/troubleshooting.md` | Current architecture docs | **Active** |
-| `docs/reports/signal_handling_corruption_analysis.md` | Unfixed recommendations feeding Stream D | **Active** |
-| `future_features/local_inference_architecture_decision.md` | Decision fully executed; informs Stream E boundary | **Active** |
+| `reports/signal_handling_corruption_analysis.md` | Unfixed recommendations feeding Stream D | **Active** |
+| `abandoned/future_features/local_inference_architecture_decision.md` | Decision fully executed; informs Stream E boundary | **Active** |
 | `.opencode/agent-environment.json` | Ground-truth environment state | **Active** (needs refresh — see §11) |
 | `.opencode/agent/*.md` (5 agents) | Current agent registry | **Partially stale** — each file has a "defer to AGENTS.md" banner |
 | `RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` | Valid for current opt-in `--robust` behaviour | **Partially active** — Stream D will rewrite |
 | `.HANDOFF_NEXT.md` | 15-month-old CRITICAL mandate | **Stale** — closes when Stream D lands |
-| `RELIABILITY_FIX.md`, `audio_optimization_plan.md`, `audio_preprocessing_research.md`, `voice_note_deep_research_prompts.md`, `FUTURE-automated-compression-feature.md`, `future_features/system_robustness_roadmap.md`, `future_features/analyzer_insights.md`, `docs/development-notes.md`, `.opencode/agent/legacy/OPTIMIZED_PROMPT.md` | Historical / abandoned | **Stale / abandoned** — do NOT act on without explicit user confirmation |
+| `RELIABILITY_FIX.md`, `abandoned/audio_optimization_plan.md`, `abandoned/audio_preprocessing_research.md`, `abandoned/voice_note_deep_research_prompts.md`, `abandoned/FUTURE-automated-compression-feature.md`, `abandoned/future_features/system_robustness_roadmap.md`, `abandoned/future_features/analyzer_insights.md`, `development-notes.md`, `agents/legacy/OPTIMIZED_PROMPT.md` | Historical / abandoned | **Stale / abandoned** — do NOT act on without explicit user confirmation |
 
 ---
 
@@ -349,4 +349,4 @@ This section records what was checked before v1.0 was finalised, so future agent
 
 ---
 
-*End of MEMORY.md. For agent operating rules: [AGENTS.md](./AGENTS.md). For contract spec: [docs/CONTRACT.md](./docs/CONTRACT.md).*
+*End of MEMORY.md. For agent operating rules: [AGENTS.md](../AGENTS.md). For contract spec: [docs/CONTRACT.md](../docs/CONTRACT.md).*

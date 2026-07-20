@@ -1,6 +1,6 @@
 # Audio Recording Reliability Fix
 
-> **⚠️ STALE / HISTORICAL (2026-07-19).** Superseded by `src/audio_processing/robust_recorder.py` (the implementation this doc analysed). For current reliability work, see [`AGENTS.md`](./AGENTS.md) §3 Stream D + [`docs/reports/signal_handling_corruption_analysis.md`](./docs/reports/signal_handling_corruption_analysis.md). Retained for archaeology only.
+> **⚠️ STALE / HISTORICAL (2026-07-19).** Superseded by `src/audio_processing/robust_recorder.py` (the implementation this doc analysed). For current reliability work, see [`AGENTS.md`](../AGENTS.md) §3 Stream D + [`reports/signal_handling_corruption_analysis.md`](./reports/signal_handling_corruption_analysis.md). Retained for archaeology only.
 
 ## Problem Analysis
 

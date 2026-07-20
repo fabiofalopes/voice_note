@@ -154,4 +154,4 @@ Do not start Stream A early just because some tests already exist.
 
 ---
 
-*End of handoff. For agent operating rules: [AGENTS.md](../../AGENTS.md). For project state/history: [MEMORY.md](../../MEMORY.md). For contract spec: [docs/CONTRACT.md](../CONTRACT.md). For 60-second briefing: [skills/voice-note-resume.md](../../skills/voice-note-resume.md).* 
+*End of handoff. For agent operating rules: [AGENTS.md](../../AGENTS.md). For project state/history: [MEMORY.md](../MEMORY.md). For contract spec: [docs/CONTRACT.md](../../docs/CONTRACT.md). For 60-second briefing: [skills/voice-note-resume.md](../../skills/voice-note-resume.md).*

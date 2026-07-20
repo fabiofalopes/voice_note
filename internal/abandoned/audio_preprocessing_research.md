@@ -1,6 +1,6 @@
 # Audio Preprocessing & Compression Research Findings
 
-> **⚠️ ABANDONED (2026-07-19).** Pure research, zero implementation. Audio compression / preprocessing explicitly excluded from v1.0 — see [`AGENTS.md`](./AGENTS.md) §5 Non-goals. Retained for historical reference only.
+> **⚠️ ABANDONED (2026-07-19).** Pure research, zero implementation. Audio compression / preprocessing explicitly excluded from v1.0 — see [`AGENTS.md`](../../AGENTS.md) §5 Non-goals. Retained for historical reference only.
 
 # Audio Preprocessing & Compression Research Findings
 

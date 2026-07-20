@@ -99,7 +99,7 @@ Adapt if a cleaner grouping emerges from reading the code:
 Before ending the session, create the next handoff prompt for **Pre-Stream-A Step 2 (write tests)** at:
 
 ```
-docs/handoffs/YYYY-MM-DD-pre-stream-a-step2-tests.md
+docs/handoffs/YYYY-MM-DD-pre-stream-a-step2-tests.md  <!-- historical path; current location: internal/handoffs/ -->
 ```
 
 Use the **same structure** as this file:
@@ -139,4 +139,4 @@ Don't restart from scratch. Don't re-commit work that's already committed. Don't
 
 ---
 
-*End of handoff. For agent operating rules: [AGENTS.md](../../AGENTS.md). For project state/history: [MEMORY.md](../../MEMORY.md). For contract spec: [docs/CONTRACT.md](../CONTRACT.md). For 60-second briefing: [skills/voice-note-resume.md](../../skills/voice-note-resume.md).*
+*End of handoff. For agent operating rules: [AGENTS.md](../../AGENTS.md). For project state/history: [MEMORY.md](../MEMORY.md). For contract spec: [docs/CONTRACT.md](../../docs/CONTRACT.md). For 60-second briefing: [skills/voice-note-resume.md](../../skills/voice-note-resume.md).*

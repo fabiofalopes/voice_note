@@ -1,6 +1,6 @@
 # Agentic Patterns Synthesis
 
-> **⚠️ PRE-CONTRACT ERA (2026-07-19).** This is meta-documentation about agent design patterns, retained for reference. The agent ecosystem itself has banners deferring to [`../../AGENTS.md`](../../AGENTS.md). Do not act on roadmap references below without checking current scope in [`../../MEMORY.md`](../../MEMORY.md).
+> **⚠️ PRE-CONTRACT ERA (2026-07-19).** This is meta-documentation about agent design patterns, retained for reference. The agent ecosystem itself has banners deferring to [`../../../AGENTS.md`](../../../AGENTS.md). Do not act on roadmap references below without checking current scope in [`../../MEMORY.md`](../../MEMORY.md).
 
 **Created**: 2025-12-07  
 **Purpose**: Consolidated patterns from agentic-forge and hub research  
@@ -478,7 +478,7 @@ Report findings as:
 
 ## Validation Against Roadmap
 
-**Reference**: `future_features/system_robustness_roadmap.md`
+**Reference**: `../../abandoned/future_features/system_robustness_roadmap.md`
 
 | Roadmap Phase | Relevant Patterns | Status |
 |---------------|-------------------|--------|
