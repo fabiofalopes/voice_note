@@ -12,36 +12,26 @@ Load this skill when:
 
 ## 60-second briefing
 
-voice_note is a **contract-first CLI** for voice recording + transcription. v1.0 ships when Stream A's 17-item DoD passes.
+voice_note is a **contract-first CLI** for voice recording + transcription. Stream A's 17-item DoD passed and contract v1.0 was frozen on 2026-07-20.
 
 **Three authoritative docs (read in this order if unfamiliar):**
 1. [`AGENTS.md`](../AGENTS.md) — agent rules + scope + execution environment + non-goals (loaded automatically)
 2. [`docs/CONTRACT.md`](../docs/CONTRACT.md) — the output contract spec (load when working Stream A)
 3. [`MEMORY.md`](../MEMORY.md) — state, history, validation, decisions (load when context needed)
 
-## Current phase: Pre-Stream-A Foundation
+## Current phase: Stream A shipped, commit pending
 
-**Hard prerequisites — MUST complete before Stream A:**
+Both Pre-Stream-A prerequisites and all Stream A DoD checks are complete. Live
+Groq/modelos success paths passed, 29 tests pass after five-role review, and
+contract v1.0 is frozen. The Stream A cluster remains uncommitted; do not mix it
+with a later stream and do not commit without an explicit user request.
 
-### Step 1: Commit baseline — ✅ completed 2026-07-20
-The provider-abstraction layer + robust recorder + strategy docs were committed in atomic `pre-a(...)` chunks — see MEMORY.md §2.3 for the actual commit list. The Fireworks dead-code baseline committed there was removed 2026-07-20. The original chunk plan (kept for the record):
+Resume from:
 
-```
-pre-a(recorder): commit robust_recorder.py baseline
-pre-a(providers): commit BaseSTTClient ABC + Groq + modelos
-pre-a(tests): add pytest fixtures for Groq + modelos response parsing
-... (6 chunks total)
-```
+- [`docs/handoffs/2026-07-21-stream-a-live-validation.md`](../docs/handoffs/2026-07-21-stream-a-live-validation.md)
+- [`MEMORY.md §2.3`](../MEMORY.md#23-baseline-commit-status)
 
-### Step 2: Write tests
-No `tests/` directory exists. Create with ~10 pytest tests:
-- `tests/test_groq_parsing.py`
-- `tests/test_modelos_parsing.py`
-- `tests/test_normalization.py`
-- `tests/test_robust_recorder.py`
-- `tests/test_contract_schema.py`
-
-Tests are the executable spec for the contract. They must fail meaningfully before Stream A, pass after.
+Treat the completed handoff and `MEMORY.md §11` as the validation evidence.
 
 ## First action recipe
 
@@ -62,10 +52,10 @@ test -f .env && echo ".env present"              # API keys available
 # - Open docs/CONTRACT.md if working Stream A
 # - Check .opencode/agent-environment.json for runtime state
 
-# 4. Identify the next unchecked item
-#    - Pre-Stream-A Step 1 chunk not committed? → do that
-#    - Tests not written? → write them
-#    - Both done? → start Stream A per docs/CONTRACT.md DoD
+# 4. Preserve the completed Stream A cluster
+#    - Read docs/handoffs/2026-07-21-stream-a-live-validation.md
+#    - Do not mix later-stream changes into the uncommitted Stream A work
+#    - Commit only when the user explicitly requests it
 ```
 
 ## Hard rules (non-negotiable)
@@ -84,7 +74,7 @@ The full 17-item Definition of Done lives in [`docs/CONTRACT.md §Stream A DoD`]
 
 ```bash
 # 1. NDJSON success
-./venv/bin/python transcribe.py recording.wav --ndjson | jq 'last | .code'
+./venv/bin/python transcribe.py recording.wav --ndjson | jq 'last | .data.code'
 # → must return "OK"
 
 # 2. FILE_NOT_FOUND exit code
@@ -108,7 +98,7 @@ The full 17-item Definition of Done lives in [`docs/CONTRACT.md §Stream A DoD`]
 - **Forgetting to translate `vn` → `./venv/bin/python transcribe.py`** in DoD verifications
 - **Working from wrong directory** — always `cd /Users/fabiofalopes/projetos/hub/voice_note` first
 - **Treating any strategy doc other than AGENTS/MEMORY/CONTRACT as authoritative** — they all have STALE/DRIFTED banners for a reason
-- **Starting Stream A before Pre-Stream-A is done** — both steps are hard prerequisites
+- **Reopening frozen v1.0 fields casually** — additive changes require a minor bump; breaking changes require a major bump
 - **Suppressing null quality fields with defaults** — the contract preserves null per docs/CONTRACT.md §11
 
 ## What to do if interrupted mid-task
@@ -123,7 +113,7 @@ The full 17-item Definition of Done lives in [`docs/CONTRACT.md §Stream A DoD`]
 
 Before ending a session:
 1. Run `git status` — know what's uncommitted
-2. If work is complete and verified → commit per AGENTS.md §6.4 commit conventions
+2. If work is complete and verified → commit only when explicitly requested, following AGENTS.md §6.4
 3. If work is incomplete → ensure files are in a recoverable state on disk
 4. Update MEMORY.md §12 Changelog if a meaningful unit was completed
 5. (Optional) Create a session handoff note in `docs/handoffs/` for complex in-progress state

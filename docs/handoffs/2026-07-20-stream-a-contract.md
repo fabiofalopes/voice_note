@@ -4,7 +4,7 @@ session_goal: Stream A — implement the output contract
 type: handoff
 audience: next agent session
 author: sisyphus (2026-07-20 handoff)
-status: ready
+status: implemented_pending_live_validation
 ---
 
 # 2026-07-20 — Stream A: Output Contract Implementation
@@ -112,7 +112,7 @@ After Stream A, all 17 tests should pass (the 2 skipped modelos tests will un-sk
 
 See **docs/CONTRACT.md §Stream A Definition of Done**. Highlights:
 
-1. `vn recording.wav --ndjson | jq 'last | .code'` returns `"OK"` on success
+1. `vn recording.wav --ndjson | jq 'last | .data.code'` returns `"OK"` on success
 2. `vn nonexistent.wav --ndjson; echo $?` exits `66` with `"code":"FILE_NOT_FOUND"`
 3. modelos preserves nulls (`avg_logprob: null`, NOT `0.0`) + emits `PROVIDER_FIELD_NULL` warning
 4. `--word-timestamps --provider modelos` fails fast with exit `64` (capability check)

@@ -1,7 +1,7 @@
 {
   "$schema": "voice_note agent environment state",
   "metadata": {
-    "version": "1.1.1",
+    "version": "1.3.0",
     "last_updated": "2026-07-20T00:00:00Z",
     "last_validated_by": "sisyphus",
     "update_trigger": "manual",
@@ -10,9 +10,9 @@
 
   "project": {
     "name": "voice_note",
-    "version": "pre-v1.0",
-    "version_note": "v1.0 has not shipped. Ships when Stream A DoD passes (see docs/CONTRACT.md).",
-    "description": "Contract-first CLI for voice recording + transcription via cloud Whisper providers (Groq, modelos). Currently pre-contract; all output is human text.",
+    "version": "1.0.0",
+    "version_note": "Contract v1.0 frozen after all 17 Stream A DoD items passed on 2026-07-20.",
+    "description": "Contract-first CLI for voice recording + transcription via cloud Whisper providers (Groq, modelos). JSON/NDJSON contract v1.0 is shipped.",
     "repository": "/Users/fabiofalopes/projetos/hub/voice_note",
     "authoritative_docs": {
       "agent_rules": "AGENTS.md",
@@ -116,21 +116,20 @@
   },
 
   "dependencies": {
-    "installed": ["groq>=0.18.0", "openai>=1.0.0", "pyaudio>=0.2.14", "python-dotenv>=1.0.1", "pyperclip>=1.8.2"],
-    "stream_a_will_add": ["langcodes>=3.0", "pydantic>=2.0", "pytest>=8.0"]
+    "installed": ["groq>=0.18.0", "openai>=1.0.0", "pyaudio>=0.2.14", "python-dotenv>=1.0.1", "pyperclip>=1.8.2", "langcodes[data]>=3.0", "pydantic>=2.0", "pytest>=8.0"]
   },
 
   "contract_status": {
     "schema_version": "1.0",
-    "status": "not_yet_implemented",
+    "status": "shipped_frozen",
     "spec_location": "docs/CONTRACT.md",
     "implementation_stream": "Stream A",
-    "blocking_prerequisites": [
-      "Pre-Stream-A Step 1: commit baseline (6 logical chunks)",
-      "Pre-Stream-A Step 2: write ~10 pytest tests"
-    ],
-    "current_stdout_surface": "human text via print() — no JSON, no NDJSON",
-    "current_exit_codes": "binary (0 success, 1 every error) — to be replaced with sysexits map in Stream A"
+    "blocking_prerequisites": [],
+    "current_stdout_surface": "human TTY output plus pure JSON and streaming NDJSON machine modes",
+    "current_exit_codes": "structured symbolic codes with sysexits-aligned shell values; Ctrl+C is 130",
+    "test_status": "29 passed",
+    "live_validation_blocker": null,
+    "live_validation_status": "passed 2026-07-20 for Groq JSON/NDJSON and modelos null/clamp paths"
   },
 
   "known_issues": [
@@ -139,6 +138,7 @@
       "severity": "critical",
       "description": "Entire provider-abstraction layer + robust_recorder + strategy docs uncommitted. 6 modified + 12+ untracked files. Blocks Stream A.",
       "resolution": "Pre-Stream-A Step 1 — commit in 6 chunks",
+      "status": "resolved",
       "reference": "MEMORY.md §2.3"
     },
     {
@@ -146,6 +146,7 @@
       "severity": "critical",
       "description": "No tests/ directory. Provider parsing unverified. Every refactor is unsafe.",
       "resolution": "Pre-Stream-A Step 2 — write ~10 pytest tests",
+      "status": "resolved",
       "reference": "AGENTS.md §2 Pre-Stream-A Step 2"
     },
     {
@@ -247,17 +248,17 @@
       "version": "1.0.0",
       "purpose": "Ensure compatibility with downstream tools (Stream F territory, deferred)",
       "triggers_on": ["new_integration_requests"],
-      "currency": "premature_blocked_by_v1.0_ship"
+      "currency": "deferred_until_two_week_contract_stability_window"
     }
   },
 
   "validation_checks": {
-    "last_run": "2026-07-19",
+    "last_run": "2026-07-20",
     "checks": [
       {"name": "python_version", "status": "pass", "expected": ">=3.11", "actual": "3.14"},
       {"name": "pyaudio_installed", "status": "pass", "version": "0.2.14"},
-      {"name": "groq_api_key", "status": "check_env", "env_var": "GROQ_API_KEY"},
-      {"name": "modelos_api_key", "status": "check_env", "env_var": "MODELOS_API_KEY"}
+      {"name": "groq_api_key", "status": "pass_live", "env_var": "GROQ_API_KEY"},
+      {"name": "modelos_api_key", "status": "pass_live", "env_var": "MODELOS_AI_KEY"}
     ]
   }
 }
