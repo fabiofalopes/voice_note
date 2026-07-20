@@ -54,34 +54,28 @@ Descriptive reality, not aspiration. Every claim grounded in code on disk.
 | Concern | Where | LOC | Status |
 |---|---|---|---|
 | Entry-point shim | `transcribe.py` | 16 | Adds `src/` to `sys.path`, calls `src.cli.main()` |
-| CLI parser | `src/cli.py` | 283 | `argparse`, single command, ~14 flags, hardcoded `if/elif` provider dispatch (L16–33) |
-| Provider abstraction | `src/api/base_client.py` | 579 | **ABC with shared chunked pipeline** — chunking, ffmpeg extraction, partial-file crash-safety, prompt chaining, silence filter, low-confidence warnings, `.txt`/`.srt`/`.json` serialisation. Designed for two-pattern registry (Stream C). |
+| CLI parser | `src/cli.py` | 629 | `argparse`, hardcoded 2-provider dispatch, output-mode selection, structured exits, and envelope finalisation |
+| Provider abstraction | `src/api/base_client.py` | 667 | **ABC with shared chunked pipeline** — chunking, normalisation, contract events, transactional writes, partial-file safety, prompt chaining, and silence handling |
 | Provider hook | `BaseSTTClient._send_chunk()` | abstract | Subclasses implement only this + `_parse_response()` |
-| Concrete providers | `groq_client.py` (200), `modelos_client.py` (165) | 365 total | **2 active providers.** Groq = native SDK custom adapter (Pattern 1). modelos = OpenAI SDK at custom `base_url` (Pattern 2). Fireworks dead code removed 2026-07-20. |
-| Data types (proto-contract) | `Segment`, `ChunkResult`, `TranscriptionResult` in `base_client.py` L28–62 | — | Latent contract — id/start/end/text/avg_logprob/no_speech_prob/compression_ratio/tokens. Needs promotion to `src/contract.py`. |
+| Concrete providers | `groq_client.py` (245), `modelos_client.py` (195) | 440 total | **2 active providers.** Groq = native SDK custom adapter (Pattern 1). modelos = OpenAI SDK at custom `base_url` (Pattern 2). |
+| Output contract | `src/contract.py`, `src/emitter.py`, `src/i18n.py` | 422 total | Pydantic v2 envelope/events, JSON/NDJSON/human renderers, ISO language normalisation, committed schemas in `schema/` |
 | Robust recorder | `src/audio_processing/robust_recorder.py` | 471 | Auto-chunking, device-failure recovery, WAV merge. **Opt-in** via `--robust`. |
 | Legacy recorder | `src/audio_processing/recorder.py` | 1029 | PyAudio + parecord (PipeWire/PulseAudio) auto-detection. Carries pre-existing LSP errors — documented tech debt, do not touch outside Stream D. |
 | Cross-platform recording | `recorder.py` | (above) | PyAudio on macOS/Windows, parecord on Linux |
 | Crash-safe resume | `.partial` files via `_load_partial` / `_append_partial` | — | `PARTIAL:chunk_end/total_duration` header + accumulated text |
 | `.opencode/` agent ecosystem | `.opencode/agent/`, `.opencode/agent-environment.json` | — | 5 specialised agents + ground-truth environment file (some files stale — see §13) |
 
-**Total active Python LOC (excluding `venv/`, `.opencode/node_modules/`, `recorder.py` legacy): ~1700 LOC across 8 files.**
+**Stream A implementation adds 422 contract-layer LOC plus contract tests and schema artifacts.**
 
 ### 2.2 What is missing (the actual gaps)
 
 | Gap | Evidence | Impact |
 |---|---|---|
-| **No machine-readable stdout** | `grep -r print.*json` in `src/cli.py` → 0 hits; all stdout is human text | UI / orchestrators must parse banners — impossible |
-| **Binary exit codes (0/1)** | `cli.py` returns `1` on every error path | Caller cannot distinguish missing-file from API failure from missing-dep |
 | **No packaging** | No `pyproject.toml`, no `setup.py`, no `[project.scripts]` | Forces `vn` shell alias; blocks `pipx install` / `uv tool install` |
-| **No tests** | No `tests/` directory; `find -name 'test_*.py'` finds only `venv/` and `node_modules/` hits | Every refactor is unsafe; provider parsing is unverified |
 | **Dead `src/config.py`** | Exports `get_groq_api_key()` etc.; **0 callers**. Clients call `os.getenv()` directly with redundant `load_dotenv()` | Confusing; violates single-source-of-truth |
 | **Hardcoded provider dispatch** | `cli.py`: `if/elif/else` chain over the 2 providers | Adding a provider requires editing the dispatcher |
 | **`--robust` not default** | `cli.py` L162: `if args.robust:` (default `False`) | Every recording without the flag risks total data loss on device failure |
 | **Ctrl+C corruption (unfixed)** | `docs/reports/signal_handling_corruption_analysis.md` recommendations not applied | Terminal state corruption + possible file truncation on interrupt |
-| **Provider parser assumes non-null quality fields** | `modelos_client._parse_response` L153–176 uses `float(getattr(seg, "field", 0.0))` — but `getattr` returns `None` when attribute exists with null value, and `float(None)` raises `TypeError` | Silence filter + low-confidence warnings silently broken on modelos + vLLM-derived providers |
-| **Segment timestamps per-chunk, not global** | ROADMAP "Known issues" | Multi-chunk SRT offsets drift |
-| **No structured logging** | `logging` module unused | All diagnostics go to stdout via `print()`, mixed with results |
 
 ### 2.3 Baseline commit status
 
@@ -98,9 +92,10 @@ CLI wiring, and reliability docs) is now committed in atomic history:
 - `ad74c68` — `pre-a(cli): wire multi-provider dispatch + config + dependencies`
 - `4d51231` — `pre-a(docs): commit reliability + signal-handling docs`
 
-**Current reality:** the baseline is in git history and Pre-Stream-A Step 1 no longer
-blocks the project. The remaining hard prerequisite before Stream A is
-**Pre-Stream-A Step 2 — write tests**.
+**Current reality:** both Pre-Stream-A prerequisites and all 17 Stream A DoD
+items are complete. Live Groq and modelos success paths passed on 2026-07-20,
+and output contract v1.0 is frozen. The implementation remains in the working
+tree pending an explicit commit request.
 
 ### 2.4 Provider quirks (empirically verified — see §11 for raw probe data)
 
@@ -321,6 +316,9 @@ This section records what was checked before v1.0 was finalised, so future agent
 | **Contract design review** | Oracle 12-dimension stress test | 3 critical fixes applied (exit code coverage, mode/kind discriminator, on-disk vs stdout shape unification). 9 minor fixes applied. | 2026-07-18 |
 | **External review** | Perplexity GPT-5.6 design review of 8 questions | Direction validated. 4 highest-priority contradictions resolved (see §3.2). 16 additional recommendations considered; 8 adopted. | 2026-07-18 |
 | **Existing parser robustness** | Code read of `modelos_client._parse_response` L153–176 + `fireworks_client._parse_response` L146–172 | Uses `float(getattr(seg, "field", 0.0))` pattern. When attribute exists with value `null`, `getattr` returns `null` (not the default), and `float(None)` raises `TypeError`. Either the OpenAI SDK is silently coercing before our code sees it, or current modelos/Fireworks paths are broken at runtime. Flagged as §2.2 gap + Stream A must fix. | 2026-07-18 |
+| **Stream A live Groq contract** | `--json --timestamps` plus `--ndjson` against a generated spoken WAV | ✅ JSON status/code/mode were `ok`/`OK`/`transcribe`; `provider_meta.x_groq.id` present; disk JSON matched stdout modulo `request_id`; NDJSON parsed cleanly and ended with `OK`. | 2026-07-20 |
+| **Stream A live modelos contract** | `--ndjson --timestamps` against 2s and 0.35s generated spoken WAVs | ✅ Authentication succeeded; null quality metrics remained null with `PROVIDER_FIELD_NULL`; 0.35s fixture emitted `TIMESTAMP_CLAMPED` and segment end equalled `0.3499375`; final code `OK`. | 2026-07-20 |
+| **Stream A final local QA** | compileall, pytest, CLI error probes, Pyright on modified contract modules, `git diff --check` | ✅ 29 tests passed; missing file exit 66/`FILE_NOT_FOUND`; modelos words exit 64/`CAPABILITY_UNSUPPORTED`; zero diagnostics in `contract.py`, `emitter.py`, and `cli.py`; clean diff check. | 2026-07-20 |
 
 **Raw probe data locations (ephemeral, deleted on reboot):**
 - `/tmp/probe_out/modelos_raw.json`
@@ -346,6 +344,8 @@ This section records what was checked before v1.0 was finalised, so future agent
 | 2026-07-20 | pre-a baseline committed | 7 atomic `pre-a(...)` commits captured the previously uncommitted baseline: robust recorder, BaseSTTClient foundation, Groq, modelos, Fireworks dead-code baseline, CLI wiring, and reliability docs. Pre-Stream-A Step 1 is complete; Step 2 tests remain. |
 | 2026-07-20 | Fireworks removed | `fireworks_client.py`, the `FIREWORKS_API_KEY` entry in `.env.example`, and the `cli.py` dispatcher choice deleted per user decision (2026-07-18). Provider count is now 2 (Groq, modelos). Stream C scope reduced to the provider registry only. |
 | 2026-07-20 | pre-a step 2 tests | pytest baseline created: 17 tests across 5 files + 2 JSON fixtures. 6 pass (Groq parsing, robust recorder), 9 fail (all meaningful — `src/contract.py` + `src/i18n.py` not yet created, §2.2 null-field parser gap), 2 skipped (modelos blocked by parser crash). Pre-Stream-A Step 2 is complete; Stream A is unblocked. |
+| 2026-07-20 | Stream A implementation candidate | Added Pydantic v1.0 contract models, JSON Schema artifacts, human/JSON/NDJSON emitters, null-safe provider normalisation, global offsets, capability fail-fast, structured exits, transactional writes, and golden/black-box tests. 29 tests pass after five-role review fixes. Live provider success-path DoD remains before freezing v1.0. |
+| **2026-07-20** | **Stream A / contract v1.0 shipped** | **All 17 DoD items passed. Live Groq JSON/NDJSON and modelos null/clamp paths verified; 29 tests pass; contract `schema_version: "1.0"` frozen.** |
 
 ---
 

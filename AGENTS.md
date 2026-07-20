@@ -25,7 +25,7 @@ Everything else (packaging, provider abstraction, local MLX execution, UI) is a 
 | **Invocation pattern** | `./venv/bin/python transcribe.py <args>` | Always from repo root. `transcribe.py` is the 16-line entry shim that calls `src.cli.main()`. |
 | **Stream A DoD commands** translate as follows | `vn recording.wav --ndjson` → `./venv/bin/python transcribe.py recording.wav --ndjson` | Substitute accordingly when running DoD verifications. |
 | **Future tests** | `./venv/bin/pytest` | pytest will be installed in venv as part of Pre-Stream-A Step 2. |
-| **API keys** | `.env` file at repo root | Provides `GROQ_API_KEY` + `MODELOS_API_KEY`. `.env` is gitignored — never commit. |
+| **API keys** | `.env` file at repo root or secure registry | Provides `GROQ_API_KEY` + `MODELOS_AI_KEY`. `.env` is gitignored — never commit. |
 | **Working directory** | Always the repo root (`/Users/fabiofalopes/projetos/hub/voice_note/`) | The `vn` alias uses a subshell to preserve `pwd`; agents must `cd` explicitly or use `workdir`. |
 | **Audio byproducts** | `recordings/` (24 GB, gitignored), `audio/` (probe outputs, gitignored) | NEVER commit. User manages compression/cleanup of recordings/ manually. |
 | **Platform** | macOS (darwin), arm64 | Linux recording path (`parecord`) supported but not the dev environment. |
@@ -47,7 +47,9 @@ test -f .env && echo ".env present"              # API keys available
 
 **Step 1 — Commit baseline.** ✅ Completed 2026-07-20. The provider-abstraction layer, the reliability layer, and all strategy docs were committed in atomic `pre-a(...)` chunks — see [MEMORY.md §2.3 Baseline commit status](./MEMORY.md#23-baseline-commit-status) for the commit list. The Fireworks dead-code baseline committed there has since been removed (user decision 2026-07-18, removed 2026-07-20).
 
-**Step 2 — Write tests.** `pytest` infrastructure does not exist. Create it. ~10 tests minimum:
+**Step 2 — Write tests.** ✅ Completed 2026-07-20. The pytest executable-spec baseline now covers provider parsing, normalisation, recorder recovery, contract models, emitters, CLI errors, atomic JSON identity, all-silent handling, and interrupts. Current local status: 29 passing tests.
+
+The original minimum target was:
 - `tests/test_groq_parsing.py` — parse Groq response fixture, assert all fields populated
 - `tests/test_modelos_parsing.py` — parse modelos response fixture, assert nulls preserved (not defaulted)
 - `tests/test_normalization.py` — null pass-through, language normalisation via `langcodes`, `end` clamping
@@ -56,7 +58,9 @@ test -f .env && echo ".env present"              # API keys available
 
 These tests are the executable spec for the contract. They must fail meaningfully before Stream A implementation, pass after.
 
-### Stream A — Output Contract (the v1.0 ship)
+### Stream A — Output Contract (✅ shipped 2026-07-20)
+
+**Current status (2026-07-20):** All 17 DoD items passed, including live Groq and modelos success paths. Contract v1.0 is frozen. Validation evidence is recorded in [MEMORY.md §11](./MEMORY.md#11-validation-log-empirically-verified) and [the completed handoff](./docs/handoffs/2026-07-21-stream-a-live-validation.md).
 
 **Goal**: Implement [docs/CONTRACT.md](./docs/CONTRACT.md) in code. Replace every `print()` in `src/cli.py` and `src/api/base_client.py` with contract-aware emitters.
 
@@ -72,7 +76,7 @@ These tests are the executable spec for the contract. They must fail meaningfull
 - `requirements.txt` — add `langcodes>=3.0`, `pydantic>=2.0`, `pytest>=8.0`.
 
 **Definition of Done** (17 items — full list in [docs/CONTRACT.md §Stream A DoD](./docs/CONTRACT.md#stream-a-definition-of-done)). Highlights:
-1. `vn recording.wav --ndjson | jq 'last | .code'` returns `"OK"` on success
+1. `vn recording.wav --ndjson | jq 'last | .data.code'` returns `"OK"` on success
 2. `vn nonexistent.wav --ndjson; echo $?` exits `66` with `"code":"FILE_NOT_FOUND"`
 3. modelos preserves nulls (`avg_logprob: null`, NOT `0.0`) + emits `PROVIDER_FIELD_NULL` warning
 4. `--word-timestamps --provider modelos` fails fast with exit `64` (capability check, NOT warning)

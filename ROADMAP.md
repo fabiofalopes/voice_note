@@ -1,8 +1,8 @@
 # voice_note — STT Pipeline Roadmap
 
-> **⚠️ DRIFTED (2026-07-19).** This document uses a Phase 0-8 model that has been **replaced by the Stream A/B/C/D/E/F model** in [`AGENTS.md`](./AGENTS.md) §3-4. It also lists Fireworks as live (dropped 2026-07-18, dead code removed 2026-07-20 — see [`MEMORY.md`](./MEMORY.md) §3.2 #8) and has zero awareness of the output contract or the modelos provider. **Do NOT use this document for current direction.** Stream A's DoD includes updating/replacing this file (see [`docs/CONTRACT.md`](./docs/CONTRACT.md) Stream A DoD item 16). Retained for phase-tracking archaeology only.
+> **ARCHIVED (2026-07-20).** This Phase 0-8 plan is retained only for historical context. The authoritative roadmap is the Stream A/B/C/D/E/F model in [`AGENTS.md`](./AGENTS.md) §3-4, with current implementation and validation state in [`MEMORY.md`](./MEMORY.md). Fireworks has been removed and Stream A contract v1.0 shipped on 2026-07-20 after all 17 DoD items passed.
 
-This document is the authoritative state of the project for any agent picking up work.
+This document is not authoritative for current work.
 
 > **Note:** The claim above is itself stale as of 2026-07-19. The authoritative sources are now AGENTS.md (rules), MEMORY.md (state/history), docs/CONTRACT.md (spec).
 Read this first. Each phase is scoped to be completable in a single session.
