@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from typing import Optional, Generator
 
 from audio_processing.utils import get_audio_duration
+from emitter import Emitter, HumanEmitter
+from i18n import normalize_language
 
 
 # ---------------------------------------------------------------------------
@@ -33,9 +35,10 @@ class Segment:
     start: float
     end: float
     text: str
-    avg_logprob: float = 0.0
-    no_speech_prob: float = 0.0
-    compression_ratio: float = 1.6
+    offset_seconds: float = 0.0
+    avg_logprob: Optional[float] = None
+    no_speech_prob: Optional[float] = None
+    compression_ratio: Optional[float] = None
     tokens: list = field(default_factory=list)
 
 
@@ -47,6 +50,7 @@ class ChunkResult:
     segments: list[Segment] = field(default_factory=list)
     detected_language: Optional[str] = None
     duration: Optional[float] = None  # audio duration as reported by API
+    provider_meta: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -59,6 +63,7 @@ class TranscriptionResult:
     output_file: Optional[str] = None  # path to saved .txt
     srt_file: Optional[str] = None  # path to saved .srt  (if timestamps requested)
     json_file: Optional[str] = None  # path to saved .json (if verbose requested)
+    provider_meta: dict = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +90,10 @@ class BaseSTTClient(ABC):
 
     PROVIDER_NAME: str = "unknown"
     AVAILABLE_MODELS: list[str] = []
+    CAPABILITIES: dict[str, bool] = {}
+
+    def __init__(self, emitter: Optional[Emitter] = None) -> None:
+        self.emitter = emitter or HumanEmitter()
 
     # Chunk / audio settings — may be overridden per provider
     CHUNK_SECONDS: int = 500
@@ -199,20 +208,21 @@ class BaseSTTClient(ABC):
 
             verb = "Transcribing" if mode == "transcribe" else "Translating"
             lang_hint = f"  |  lang={language}" if language else ""
-            print(
+            self.emitter.log(
                 f"[{self.PROVIDER_NAME}] {verb}  |  "
                 f"{file_size_mb:.1f} MB  |  {duration:.1f}s  |  "
                 f"model={model}  |  chunk={self.CHUNK_SECONDS}s{lang_hint}"
             )
-            print(f"  output → {txt_file}")
+            self.emitter.log(f"  output → {txt_file}")
             if verbose:
-                print(f"  srt    → {out_base}.srt")
-                print(f"  json   → {out_base}.json")
+                self.emitter.log(f"  srt    → {out_base}.srt")
+                self.emitter.log(f"  json   → {out_base}.json")
 
             resume_start, existing_text = self._load_partial(partial_file, duration)
             accumulated_texts: list[str] = [existing_text] if existing_text else []
             all_segments: list[Segment] = []
             detected_language: Optional[str] = None
+            provider_meta: dict = {}
             prompt: Optional[str] = None  # rolling prompt for chunk continuity
 
             for chunk_result in self._iter_chunks(
@@ -231,40 +241,72 @@ class BaseSTTClient(ABC):
                 all_segments.extend(chunk_result.segments)
                 if chunk_result.detected_language:
                     detected_language = chunk_result.detected_language
+                provider_meta.update(chunk_result.provider_meta)
                 # Update rolling prompt for next chunk
                 prompt = self._build_prompt(chunk_result.text)
 
             if not accumulated_texts:
-                print(f"[{self.PROVIDER_NAME}] No chunks succeeded.")
+                warning_codes = {warning.code for warning in self.emitter.warnings}
+                chunk_failure_codes = {
+                    "CHUNK_FAILED",
+                    "CHUNK_EXTRACTION_FAILED",
+                    "PROVIDER_CHUNK_ERROR",
+                    "PROVIDER_RETRIES_EXHAUSTED",
+                }
+                if (
+                    "SILENT_CHUNK_SKIPPED" in warning_codes
+                    and not warning_codes.intersection(chunk_failure_codes)
+                ):
+                    self.emitter.warning(
+                        "ALL_CHUNKS_SILENT",
+                        "All audio chunks were silent",
+                    )
+                else:
+                    self.emitter.warning(
+                        "ALL_CHUNKS_FAILED",
+                        f"[{self.PROVIDER_NAME}] No chunks succeeded.",
+                    )
                 return None
 
             full_text = " ".join(accumulated_texts)
 
             # Save outputs
             self._save_txt(full_text, txt_file)
-            srt_path = json_path = None
+            srt_path = None
             if verbose and all_segments:
                 srt_path = self._save_srt(all_segments, out_base + ".srt")
-                json_path = self._save_json(
-                    full_text, all_segments, detected_language, out_base + ".json"
-                )
 
             self._remove_partial(partial_file)
 
             return TranscriptionResult(
                 text=full_text,
                 segments=all_segments,
-                detected_language=detected_language,
+                detected_language=normalize_language(detected_language),
                 output_file=txt_file,
                 srt_file=srt_path,
-                json_file=json_path,
+                json_file=None,
+                provider_meta=provider_meta,
             )
 
         except FileNotFoundError:
-            print(f"[{self.PROVIDER_NAME}] File not found: {audio_file}")
+            self.emitter.error(
+                {
+                    "code": "FILE_NOT_FOUND",
+                    "category": "input",
+                    "retryable": False,
+                    "message": f"File not found: {audio_file}",
+                }
+            )
             return None
-        except Exception as e:
-            print(f"[{self.PROVIDER_NAME}] Pipeline error: {e}")
+        except Exception:
+            self.emitter.error(
+                {
+                    "code": "INTERNAL_ERROR",
+                    "category": "internal",
+                    "retryable": False,
+                    "message": f"[{self.PROVIDER_NAME}] Pipeline failed",
+                }
+            )
             return None
 
     def _iter_chunks(
@@ -290,11 +332,11 @@ class BaseSTTClient(ABC):
 
         verb = "Transcribing" if mode == "transcribe" else "Translating"
         if start_offset > 0:
-            print(
+            self.emitter.log(
                 f"  Resuming from {start_offset:.0f}s  "
                 f"(chunks {done_before + 1}–{total_chunks})"
             )
-        print(
+        self.emitter.log(
             f"  {verb} {duration:.0f}s  |  "
             f"{total_chunks} chunks × {chunk_dur}s  |  "
             f"opus {self.CHUNK_BITRATE} mono {self.CHUNK_SAMPLERATE}Hz"
@@ -314,13 +356,17 @@ class BaseSTTClient(ABC):
             try:
                 self._extract_chunk(audio_file, chunk_start, seg_duration, chunk_file)
                 chunk_size_mb = os.path.getsize(chunk_file) / (1024 * 1024)
-                print(
+                self.emitter.log(
                     f"  chunk {chunk_num}/{total_chunks}  "
                     f"({chunk_start:.0f}s–{chunk_end:.0f}s)  "
                     f"{chunk_size_mb:.2f} MB"
                 )
             except Exception as e:
-                print(f"  [error] extract chunk {chunk_num}: {e}")
+                self.emitter.warning(
+                    "CHUNK_EXTRACTION_FAILED",
+                    f"Could not extract chunk {chunk_num}: {e}",
+                    chunk_num - 1,
+                )
                 try:
                     os.unlink(chunk_file)
                 except OSError:
@@ -349,11 +395,39 @@ class BaseSTTClient(ABC):
                 pass
 
             if result:
+                null_fields: set[str] = set()
+                for segment in result.segments:
+                    segment.offset_seconds = chunk_start
+                    if segment.end > seg_duration:
+                        original_end = segment.end
+                        segment.end = seg_duration
+                        self.emitter.warning(
+                            "TIMESTAMP_CLAMPED",
+                            f"end {original_end:.2f}s clamped to chunk duration {seg_duration:.2f}s",
+                            chunk_num - 1,
+                        )
+                    for field_name in (
+                        "avg_logprob",
+                        "compression_ratio",
+                        "no_speech_prob",
+                    ):
+                        if getattr(segment, field_name) is None:
+                            null_fields.add(field_name)
+                if null_fields:
+                    self.emitter.warning(
+                        "PROVIDER_FIELD_NULL",
+                        "Provider returned null for "
+                        + ", ".join(sorted(null_fields))
+                        + " (preserved as null)",
+                        chunk_num - 1,
+                    )
+
                 # Filter: if all segments are silence, skip
                 if self._is_silent_chunk(result):
-                    print(
-                        f"  chunk {chunk_num}/{total_chunks}: "
-                        f"skipped (silence, no_speech_prob high)"
+                    self.emitter.warning(
+                        "SILENT_CHUNK_SKIPPED",
+                        f"Chunk {chunk_num}/{total_chunks} skipped because it is silent",
+                        chunk_num - 1,
                     )
                 else:
                     # Warn on low confidence
@@ -361,16 +435,18 @@ class BaseSTTClient(ABC):
                         low_conf = [
                             s
                             for s in result.segments
-                            if s.avg_logprob < self.LOW_CONFIDENCE_WARN_THRESHOLD
+                            if s.avg_logprob is not None
+                            and s.avg_logprob < self.LOW_CONFIDENCE_WARN_THRESHOLD
                         ]
                         if low_conf:
-                            print(
-                                f"  [warn] chunk {chunk_num}: "
-                                f"{len(low_conf)} low-confidence segments "
-                                f"(avg_logprob < {self.LOW_CONFIDENCE_WARN_THRESHOLD})"
+                            self.emitter.warning(
+                                "LOW_CONFIDENCE_SEGMENTS",
+                                f"{len(low_conf)} segments below threshold "
+                                f"{self.LOW_CONFIDENCE_WARN_THRESHOLD}",
+                                chunk_num - 1,
                             )
 
-                    print(
+                    self.emitter.log(
                         f"  [ok] chunk {chunk_num}/{total_chunks}: "
                         f"{len(result.text)} chars"
                         + (
@@ -380,6 +456,20 @@ class BaseSTTClient(ABC):
                         )
                     )
 
+                    for segment in result.segments:
+                        self.emitter.segment(
+                            {
+                                "chunk_index": chunk_num - 1,
+                                "offset_seconds": segment.offset_seconds,
+                                "id": segment.id,
+                                "start": segment.start,
+                                "end": segment.end,
+                                "text": segment.text,
+                                "avg_logprob": segment.avg_logprob,
+                                "no_speech_prob": segment.no_speech_prob,
+                            }
+                        )
+
                     # 4. Persist partial immediately
                     if partial_file:
                         self._append_partial(
@@ -388,7 +478,11 @@ class BaseSTTClient(ABC):
 
                     yield result
             else:
-                print(f"  [warn] chunk {chunk_num}/{total_chunks}: failed — skipping")
+                self.emitter.warning(
+                    "CHUNK_FAILED",
+                    f"Chunk {chunk_num}/{total_chunks} failed and was skipped",
+                    chunk_num - 1,
+                )
 
             chunk_start = chunk_end - self.OVERLAP_SECONDS
             if chunk_end >= duration:
@@ -447,10 +541,15 @@ class BaseSTTClient(ABC):
                 parts = header[8:].split("/")
                 resume_at = float(parts[0])
                 pct = resume_at / total_duration * 100 if total_duration else 0
-                print(f"  Resuming from partial  {resume_at:.0f}s ({pct:.0f}% done)")
+                self.emitter.log(
+                    f"  Resuming from partial  {resume_at:.0f}s ({pct:.0f}% done)"
+                )
                 return resume_at, text if text else None
         except Exception as e:
-            print(f"  [warn] Could not read partial file ({e}) — starting fresh")
+            self.emitter.warning(
+                "PARTIAL_READ_FAILED",
+                f"Could not read partial file ({e}); starting fresh",
+            )
         return 0.0, None
 
     def _append_partial(
@@ -468,7 +567,9 @@ class BaseSTTClient(ABC):
                 f.write(f"PARTIAL:{chunk_end:.1f}/{total_duration:.1f}\n")
                 f.write(full_so_far)
         except Exception as e:
-            print(f"  [warn] Could not write partial file: {e}")
+            self.emitter.warning(
+                "PARTIAL_WRITE_FAILED", f"Could not write partial file: {e}"
+            )
 
     def _remove_partial(self, partial_file: str) -> None:
         try:
@@ -481,53 +582,38 @@ class BaseSTTClient(ABC):
     # -----------------------------------------------------------------------
 
     def _save_txt(self, text: str, path: str) -> None:
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(text)
-        print(f"  saved txt  → {path}  ({len(text)} chars)")
+        self._atomic_write(path, text)
+        self.emitter.log(f"  saved txt  → {path}  ({len(text)} chars)")
 
     def _save_srt(self, segments: list[Segment], path: str) -> str:
         """Write standard SRT subtitle file from segment list."""
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            for i, seg in enumerate(segments, 1):
-                f.write(f"{i}\n")
-                f.write(f"{_fmt_srt_time(seg.start)} --> {_fmt_srt_time(seg.end)}\n")
-                f.write(seg.text.strip() + "\n\n")
-        print(f"  saved srt  → {path}  ({len(segments)} segments)")
+        blocks = []
+        for i, seg in enumerate(segments, 1):
+            blocks.append(
+                f"{i}\n"
+                f"{_fmt_srt_time(seg.start + seg.offset_seconds)} --> "
+                f"{_fmt_srt_time(seg.end + seg.offset_seconds)}\n"
+                f"{seg.text.strip()}\n"
+            )
+        self._atomic_write(path, "\n".join(blocks))
+        self.emitter.log(f"  saved srt  → {path}  ({len(segments)} segments)")
         return path
 
-    def _save_json(
-        self,
-        text: str,
-        segments: list[Segment],
-        language: Optional[str],
-        path: str,
-    ) -> str:
-        """Write full verbose JSON (text + segments + metadata)."""
-        import json
+    def _atomic_write(self, path: str, content: str) -> None:
+        """Write UTF-8 text via fsync and atomic replacement.
 
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        data = {
-            "text": text,
-            "language": language,
-            "segments": [
-                {
-                    "id": s.id,
-                    "start": s.start,
-                    "end": s.end,
-                    "text": s.text,
-                    "avg_logprob": s.avg_logprob,
-                    "no_speech_prob": s.no_speech_prob,
-                    "compression_ratio": s.compression_ratio,
-                }
-                for s in segments
-            ],
-        }
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print(f"  saved json → {path}  ({len(segments)} segments)")
-        return path
+        Args:
+            path: Final output path.
+            content: Complete text to commit.
+        """
+        directory = os.path.dirname(os.path.abspath(path))
+        os.makedirs(directory, exist_ok=True)
+        temp_path = f"{path}.tmp.{self.emitter.request_id}"
+        with open(temp_path, "w", encoding="utf-8") as file:
+            file.write(content)
+            file.flush()
+            os.fsync(file.fileno())
+        os.replace(temp_path, path)
 
     # -----------------------------------------------------------------------
     # Helpers
@@ -545,7 +631,9 @@ class BaseSTTClient(ABC):
         if not result.segments:
             return False
         return all(
-            s.no_speech_prob > self.NO_SPEECH_SKIP_THRESHOLD for s in result.segments
+            s.no_speech_prob is not None
+            and s.no_speech_prob > self.NO_SPEECH_SKIP_THRESHOLD
+            for s in result.segments
         )
 
     def _default_output_base(self, audio_file: str, suffix: str) -> str:
