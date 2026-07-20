@@ -1,0 +1,131 @@
+# Robust Recording Guide
+
+## The Problem
+
+When recording long audio sessions, the standard recorder can lose everything if:
+- Your Bluetooth earbuds run out of battery
+- The audio device disconnects
+- The process crashes
+- You press Ctrl+C before the file is saved
+
+**Why?** The standard recorder keeps ALL audio in memory and only saves when you stop. 4.5 hours = 1.3GB in RAM - if anything goes wrong, it's all gone.
+
+## The Solution
+
+Use the **robust recorder** (`--robust`) which:
+
+✅ **Saves every 5 minutes** (configurable) to separate files
+✅ **Handles device disconnection** gracefully - saves what it has
+✅ **Auto-merges chunks** after recording into one file
+✅ **Keeps individual chunks** as backup
+✅ **No data loss** - worst case you lose only the current chunk
+
+## Usage
+
+### Basic Usage (Recommended)
+
+```bash
+# Record with robust mode (saves every 5 minutes)
+vn --robust
+
+# Specify chunk size (e.g., every 10 minutes)
+vn --robust --chunk-minutes 10
+
+# Record with max duration (e.g., 2 hours)
+vn --robust --max-duration 120
+
+# Combine with transcription
+vn --robust --provider groq --model whisper-large-v3
+```
+
+### Recording Only
+
+```bash
+# Record for later transcription
+vn --robust --record-output my_session.wav
+```
+
+### What Happens
+
+1. Recording starts with progress indicators
+2. Every 5 minutes (or your `--chunk-minutes`), it saves a chunk:
+   ```
+   📼 Chunk 1: Recording to recording_20260402_194800_chunk001.wav
+      Progress: 100.0% | 300s elapsed
+   ✅ Saved chunk: recording_20260402_194800_chunk001.wav (5.2MB)
+   ```
+
+3. When you stop (Ctrl+C), it merges all chunks:
+   ```
+   🔗 Merging 12 chunks into recording_20260402_195120_merged.wav...
+   ✅ Merged file created: recording_20260402_195120_merged.wav (62.4MB)
+   ```
+
+4. Individual chunks are kept as backup in the recordings folder
+
+### What If Device Fails?
+
+If your earbuds die or device disconnects:
+
+```
+⚠️  Device error detected (1/50)
+⚠️  Device error detected (2/50)
+...
+⚠️  Device error detected (50/50)
+⚠️  Device disconnected after 50 errors
+💡 Tip: Reconnect your audio device and restart recording
+✅ Chunk 3 complete: 287.3s recorded
+✅ Saved chunk: recording_20260402_194800_chunk003.wav (3.1MB)
+```
+
+**Result:** You keep chunks 1-3 (only lose the current 4th chunk)
+
+## Comparison
+
+| Feature | Standard Recorder | Robust Recorder |
+|---------|------------------|-----------------|
+| Memory usage | ALL in RAM | Saves to disk |
+| Device failure | LOSES EVERYTHING | Saves current chunk |
+| Process crash | LOSES EVERYTHING | Keeps all saved chunks |
+| Long recordings | Risky | Safe |
+| File output | Single file | Merged + individual chunks |
+
+## Tips
+
+1. **For long sessions** (>30 min), ALWAYS use `--robust`
+2. **Chunk size**: 5-10 minutes is good balance
+3. **Individual chunks**: Keep them as backup until you verify the merged file
+4. **Earbuds**: Keep them charged! 😄
+
+## Examples
+
+```bash
+# Quick voice note (5 min) - standard is fine
+vn
+
+# Long meeting (1 hour) - use robust
+vn --robust --chunk-minutes 10
+
+# Lecture recording (2 hours) - robust + transcription
+vn --robust --max-duration 120 --chunk-minutes 10
+
+# Recording from specific device
+vn --robust --device 0 --chunk-minutes 5
+
+# Just record, transcribe later
+vn --robust --record-output important_session.wav
+```
+
+## Recovery from Failed Standard Recording
+
+If you already have a failed recording (like what happened to you):
+
+```bash
+# Check what was saved
+ls -lh recordings/
+
+# If you see a .partial file or .wav file, try to transcribe it
+vn recordings/failed_recording.wav
+```
+
+The partial file might have some recoverable audio!
