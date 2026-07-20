@@ -84,13 +84,24 @@ Descriptive reality, not aspiration. Every claim grounded in code on disk.
 | **Segment timestamps per-chunk, not global** | ROADMAP "Known issues" | Multi-chunk SRT offsets drift |
 | **No structured logging** | `logging` module unused | All diagnostics go to stdout via `print()`, mixed with results |
 
-### 2.3 What is uncommitted in git (handle with care)
+### 2.3 Baseline commit status
 
-Working tree (verified 2026-07-19):
-- **Modified (6 files):** `.env.example`, `requirements.txt`, `src/api/__init__.py`, `src/api/groq_client.py`, `src/cli.py`, `src/config.py`
-- **Untracked (12+ entries):** `.HANDOFF_NEXT.md`, `.opencode/`, `FUTURE-automated-compression-feature.md`, `RELIABILITY_FIRST.md`, `RELIABILITY_FIX.md`, `ROADMAP.md`, `ROBUST_RECORDING.md`, `audio/`, `audio_optimization_plan.md`, `audio_preprocessing_research.md`, `docs/reports/`, `src/api/base_client.py`, `src/api/fireworks_client.py`, `src/api/modelos_client.py`, `src/audio_processing/robust_recorder.py`, `voice_note_deep_research_prompts.md`
+Pre-Stream-A Step 1 was completed on **2026-07-20**.
 
-> **The entire provider-abstraction layer, the entire reliability layer, and all strategy docs are uncommitted.** Pre-Stream-A Step 1 commits this work in coherent chunks before any contract refactor.
+The previously uncommitted baseline (provider abstraction layer, robust recorder,
+CLI wiring, and reliability docs) is now committed in atomic history:
+
+- `3db1430` — `pre-a(recorder): commit fault-tolerant robust recorder baseline`
+- `4c55223` — `pre-a(providers): commit BaseSTTClient ABC with shared chunked pipeline`
+- `3b4e21a` — `pre-a(groq): rewrite Groq client as BaseSTTClient subclass`
+- `0b1d7b2` — `pre-a(modelos): add modelos client`
+- `e4d9887` — `pre-a(fireworks): add Fireworks client dead-code baseline`
+- `ad74c68` — `pre-a(cli): wire multi-provider dispatch + config + dependencies`
+- `4d51231` — `pre-a(docs): commit reliability + signal-handling docs`
+
+**Current reality:** the baseline is in git history and Pre-Stream-A Step 1 no longer
+blocks the project. The remaining hard prerequisite before Stream A is
+**Pre-Stream-A Step 2 — write tests**.
 
 ### 2.4 Provider quirks (empirically verified — see §11 for raw probe data)
 
@@ -335,6 +346,7 @@ This section records what was checked before v1.0 was finalised, so future agent
 | 2026-07-19 | settling | Final synthesis of v2.3 + external review. 4 contradictions resolved (null pass-through over defaults; capabilities over warnings; transactional writes; SIGINT ≠ success). NDJSON pruned to 5 event types. Streams B/E/F deferred for solo-dev focus. |
 | 2026-07-19 | master prompt v1 | Single 880-line master prompt created. Briefly authoritative. |
 | **2026-07-19** | **3-file split (this structure)** | **Master prompt split into `AGENTS.md` (rules), `MEMORY.md` (this file — state/history), `docs/CONTRACT.md` (spec). Cleaner separation of always-loaded rules from on-demand reference material. Adopted all prior resolutions. Test-first + commit-first enforced as AGENTS.md §2 hard prerequisites.** |
+| 2026-07-20 | pre-a baseline committed | 7 atomic `pre-a(...)` commits captured the previously uncommitted baseline: robust recorder, BaseSTTClient foundation, Groq, modelos, Fireworks dead-code baseline, CLI wiring, and reliability docs. Pre-Stream-A Step 1 is complete; Step 2 tests remain. |
 
 ---
 
