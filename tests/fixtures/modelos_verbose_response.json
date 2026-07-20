@@ -1,0 +1,21 @@
+{
+  "text": "Okay.",
+  "language": "en",
+  "duration": 2.28,
+  "segments": [
+    {
+      "id": null,
+      "seek": null,
+      "start": 0.0,
+      "end": 30.19,
+      "text": "Okay.",
+      "temperature": null,
+      "avg_logprob": null,
+      "compression_ratio": null,
+      "no_speech_prob": null,
+      "tokens": null
+    }
+  ],
+  "words": null,
+  "usage": null
+}

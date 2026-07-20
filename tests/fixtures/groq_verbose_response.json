@@ -1,0 +1,32 @@
+{
+  "text": "Okay. This is a test transcription.",
+  "language": "English",
+  "duration": 2.27,
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 2.06,
+      "text": "Okay.",
+      "temperature": 0.0,
+      "avg_logprob": -0.42,
+      "compression_ratio": 1.6,
+      "no_speech_prob": 0.03,
+      "tokens": [50364, 543]
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 2.06,
+      "end": 2.27,
+      "text": " This is a test transcription.",
+      "temperature": 0.0,
+      "avg_logprob": -0.35,
+      "compression_ratio": 1.5,
+      "no_speech_prob": 0.01,
+      "tokens": [50364, 543, 4996]
+    }
+  ],
+  "x_groq": {"id": "req_abc123"}
+}

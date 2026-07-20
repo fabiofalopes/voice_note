@@ -345,6 +345,7 @@ This section records what was checked before v1.0 was finalised, so future agent
 | **2026-07-19** | **3-file split (this structure)** | **Master prompt split into `AGENTS.md` (rules), `MEMORY.md` (this file — state/history), `docs/CONTRACT.md` (spec). Cleaner separation of always-loaded rules from on-demand reference material. Adopted all prior resolutions. Test-first + commit-first enforced as AGENTS.md §2 hard prerequisites.** |
 | 2026-07-20 | pre-a baseline committed | 7 atomic `pre-a(...)` commits captured the previously uncommitted baseline: robust recorder, BaseSTTClient foundation, Groq, modelos, Fireworks dead-code baseline, CLI wiring, and reliability docs. Pre-Stream-A Step 1 is complete; Step 2 tests remain. |
 | 2026-07-20 | Fireworks removed | `fireworks_client.py`, the `FIREWORKS_API_KEY` entry in `.env.example`, and the `cli.py` dispatcher choice deleted per user decision (2026-07-18). Provider count is now 2 (Groq, modelos). Stream C scope reduced to the provider registry only. |
+| 2026-07-20 | pre-a step 2 tests | pytest baseline created: 17 tests across 5 files + 2 JSON fixtures. 6 pass (Groq parsing, robust recorder), 9 fail (all meaningful — `src/contract.py` + `src/i18n.py` not yet created, §2.2 null-field parser gap), 2 skipped (modelos blocked by parser crash). Pre-Stream-A Step 2 is complete; Stream A is unblocked. |
 
 ---
 
