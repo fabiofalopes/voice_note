@@ -1,7 +1,7 @@
 """
 Base STT client interface.
 
-All provider clients (Groq, Fireworks, …) inherit from this.
+All provider clients (Groq, modelos) inherit from this.
 Defines the shared pipeline: chunked extraction, partial-file crash-safety,
 output serialisation, and the abstract _send_chunk() hook each provider fills.
 """

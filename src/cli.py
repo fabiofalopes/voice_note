@@ -19,18 +19,12 @@ def _build_client(provider: str):
         from api.groq_client import GroqWhisperClient
 
         return GroqWhisperClient()
-    elif provider == "fireworks":
-        from api.fireworks_client import FireworksSTTClient
-
-        return FireworksSTTClient()
     elif provider == "modelos":
         from api.modelos_client import ModelosSTTClient
 
         return ModelosSTTClient()
     else:
-        raise ValueError(
-            f"Unknown provider: {provider!r}. Choose 'groq', 'fireworks', or 'modelos'."
-        )
+        raise ValueError(f"Unknown provider: {provider!r}. Choose 'groq' or 'modelos'.")
 
 
 def main():
@@ -47,7 +41,7 @@ def main():
     parser.add_argument(
         "--provider",
         "-p",
-        choices=["groq", "fireworks", "modelos"],
+        choices=["groq", "modelos"],
         default="groq",
         help="STT provider to use (default: groq)",
     )
@@ -58,7 +52,6 @@ def main():
         help=(
             "Model name. Defaults to provider default. "
             "Groq: whisper-large-v3[-turbo], distil-whisper-large-v3-en. "
-            "Fireworks: accounts/fireworks/models/whisper-v3[-turbo]. "
             "Modelos: stt-large-v3-turbo."
         ),
     )

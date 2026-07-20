@@ -2,7 +2,6 @@
 
 from .base_client import BaseSTTClient, Segment, ChunkResult, TranscriptionResult
 from .groq_client import GroqWhisperClient
-from .fireworks_client import FireworksSTTClient
 from .modelos_client import ModelosSTTClient
 
 __all__ = [
@@ -11,6 +10,5 @@ __all__ = [
     "ChunkResult",
     "TranscriptionResult",
     "GroqWhisperClient",
-    "FireworksSTTClient",
     "ModelosSTTClient",
 ]
