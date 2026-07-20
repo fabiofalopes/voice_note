@@ -1,5 +1,7 @@
 # System Robustness & Optimization Roadmap
 
+> **⚠️ ASPIRATIONAL / SUPERSEDED (2026-07-19).** Zero checkboxes ticked. Replaced by Stream D in [`AGENTS.md`](../AGENTS.md) §3. Do not act on this document — see [`MEMORY.md`](../MEMORY.md) §9.3 for context.
+
 ## Vision Statement
 
 This voice transcription system is designed to be a **fast, intuitive, zero-configuration recording tool** that leverages API-based Whisper models for instant transcription results. The core philosophy is: user starts the program, talks, gets transcription - no complexity, no configuration, no limits.

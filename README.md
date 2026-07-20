@@ -1,5 +1,7 @@
 # Voice Transcriber
 
+> **⚠️ DRIFTED (2026-07-19).** This README describes the **pre-contract, Groq-only** state of voice_note. It does not mention the `vn` alias, the modelos provider, the `--provider` / `--robust` / `--output` / `--json` / `--ndjson` flags, or the output contract. The user-facing README will be rewritten as part of Stream A's DoD ([`docs/CONTRACT.md`](./docs/CONTRACT.md) Stream A DoD items 15-16). For current project direction see [`AGENTS.md`](./AGENTS.md); for state/history see [`MEMORY.md`](./MEMORY.md).
+
 Cross-platform voice recording and transcription using Groq's Whisper API. Optimized for modern Linux systems with PipeWire, while maintaining full compatibility with macOS and Windows.
 
 ## Quick Start
@@ -81,7 +83,9 @@ future_features/       # Preserved LLM assets
 - **[Audio System Architecture](docs/audio-system.md)** - How the cross-platform audio system works
 - **[PipeWire Integration](docs/pipewire-integration.md)** - Modern Linux audio support
 - **[Troubleshooting Guide](docs/troubleshooting.md)** - Common issues and solutions
-- **[Development Notes](docs/development-notes.md)** - Technical implementation details
+- **[Output Contract](docs/CONTRACT.md)** - voice_note v1.0 contract spec (Stream A reference)
+- **[Agent Rules](AGENTS.md)** - Operating rules for any agent touching voice_note code
+- **[Project Memory](MEMORY.md)** - State, history, decisions, validation log
 
 ## Aliases
 

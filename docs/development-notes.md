@@ -1,5 +1,7 @@
 # Development Notes
 
+> **⚠️ STALE (2026-07-19).** Pre-dates the robust-recorder and multi-provider era. Useful for archaeology only. For current state, see [`../MEMORY.md`](../MEMORY.md).
+
 ## Project Evolution
 
 ### Initial Implementation

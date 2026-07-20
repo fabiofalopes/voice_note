@@ -50,6 +50,8 @@ dist/
 
 recordings/
 outputs/
+audio/
+*.opus
 
 # mp3 and wav files
 *.mp3

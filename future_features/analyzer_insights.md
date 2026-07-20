@@ -1,5 +1,7 @@
 # Post-Processing Analyzer Insights
 
+> **⚠️ HISTORICAL ONLY (2026-07-19).** Old LLM post-processing, removed. LLM post-processing is ROADMAP Phase 7, deferred per [`AGENTS.md`](../AGENTS.md) §5 Non-goals. Retained for reference; do not act on without explicit user confirmation.
+
 ## Key Learnings from Original Implementation
 
 ### Dynamic Model Selection Strategy
