@@ -1,0 +1,74 @@
+{
+  "$defs": {
+    "EventType": {
+      "description": "NDJSON event vocabulary for schema version 1.0.",
+      "enum": [
+        "start",
+        "segment",
+        "warning",
+        "error",
+        "end"
+      ],
+      "title": "EventType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One independently parseable NDJSON stream event.",
+  "properties": {
+    "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+    },
+    "event_id": {
+      "format": "uuid",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "level": {
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "Level",
+      "type": "string"
+    },
+    "request_id": {
+      "format": "uuid",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "time": {
+      "format": "date-time",
+      "title": "Time",
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/EventType"
+    }
+  },
+  "required": [
+    "request_id",
+    "event_id",
+    "sequence",
+    "time",
+    "level",
+    "type",
+    "data"
+  ],
+  "title": "Event",
+  "type": "object"
+}

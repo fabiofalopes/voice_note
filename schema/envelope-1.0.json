@@ -1,0 +1,553 @@
+{
+  "$defs": {
+    "AudioInput": {
+      "additionalProperties": false,
+      "description": "Metadata for the input audio source.",
+      "properties": {
+        "audio_file": {
+          "title": "Audio File",
+          "type": "string"
+        },
+        "duration_seconds": {
+          "title": "Duration Seconds",
+          "type": "number"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "audio_file",
+        "duration_seconds",
+        "size_bytes"
+      ],
+      "title": "AudioInput",
+      "type": "object"
+    },
+    "Capabilities": {
+      "additionalProperties": false,
+      "description": "Features supported by the selected provider.",
+      "properties": {
+        "language_detection": {
+          "title": "Language Detection",
+          "type": "boolean"
+        },
+        "quality_metrics": {
+          "title": "Quality Metrics",
+          "type": "boolean"
+        },
+        "segment_timestamps": {
+          "title": "Segment Timestamps",
+          "type": "boolean"
+        },
+        "speaker_diarization": {
+          "title": "Speaker Diarization",
+          "type": "boolean"
+        },
+        "word_timestamps": {
+          "title": "Word Timestamps",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "word_timestamps",
+        "segment_timestamps",
+        "language_detection",
+        "quality_metrics",
+        "speaker_diarization"
+      ],
+      "title": "Capabilities",
+      "type": "object"
+    },
+    "Error": {
+      "additionalProperties": false,
+      "description": "Structured fatal or partial-failure detail.",
+      "properties": {
+        "category": {
+          "enum": [
+            "usage",
+            "input",
+            "recording",
+            "dependency",
+            "auth",
+            "provider",
+            "storage",
+            "internal",
+            "cancelled"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "cause": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cause"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "retry_after_seconds": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Retry After Seconds"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "category",
+        "message"
+      ],
+      "title": "Error",
+      "type": "object"
+    },
+    "Outputs": {
+      "additionalProperties": false,
+      "description": "Successfully promoted output artifact paths.",
+      "properties": {
+        "json": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Json"
+        },
+        "srt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Srt"
+        },
+        "txt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Txt"
+        }
+      },
+      "title": "Outputs",
+      "type": "object"
+    },
+    "Result": {
+      "additionalProperties": false,
+      "description": "Successful or partial transcription result.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "transcription",
+            "translation"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "language_detected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language Detected"
+        },
+        "postprocessed": {
+          "default": null,
+          "title": "Postprocessed",
+          "type": "null"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "title": "Segments",
+          "type": "array"
+        },
+        "source_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Language"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "Result",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "description": "Canonical provider-neutral transcription segment.",
+      "properties": {
+        "avg_logprob": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Avg Logprob"
+        },
+        "compression_ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compression Ratio"
+        },
+        "end": {
+          "title": "End",
+          "type": "number"
+        },
+        "id": {
+          "default": 0,
+          "title": "Id",
+          "type": "integer"
+        },
+        "no_speech_prob": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "No Speech Prob"
+        },
+        "offset_seconds": {
+          "default": 0.0,
+          "title": "Offset Seconds",
+          "type": "number"
+        },
+        "seek": {
+          "default": 0,
+          "title": "Seek",
+          "type": "integer"
+        },
+        "speaker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speaker"
+        },
+        "start": {
+          "title": "Start",
+          "type": "number"
+        },
+        "temperature": {
+          "default": 0.0,
+          "title": "Temperature",
+          "type": "number"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "tokens": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Tokens",
+          "type": "array"
+        },
+        "words": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Word"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Words"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "text"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "Status": {
+      "description": "Request completion status.",
+      "enum": [
+        "ok",
+        "error",
+        "partial"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "Timing": {
+      "additionalProperties": false,
+      "description": "Wall-clock durations for request stages.",
+      "properties": {
+        "record_secs": {
+          "default": 0.0,
+          "title": "Record Secs",
+          "type": "number"
+        },
+        "total_secs": {
+          "default": 0.0,
+          "title": "Total Secs",
+          "type": "number"
+        },
+        "transcribe_secs": {
+          "default": 0.0,
+          "title": "Transcribe Secs",
+          "type": "number"
+        }
+      },
+      "title": "Timing",
+      "type": "object"
+    },
+    "Warning": {
+      "additionalProperties": false,
+      "description": "Structured non-fatal condition.",
+      "properties": {
+        "chunk_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chunk Index"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "level": {
+          "const": "warning",
+          "default": "warning",
+          "title": "Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "detail"
+      ],
+      "title": "Warning",
+      "type": "object"
+    },
+    "Word": {
+      "additionalProperties": false,
+      "description": "One word-level timestamp returned by a capable provider.",
+      "properties": {
+        "end": {
+          "title": "End",
+          "type": "number"
+        },
+        "start": {
+          "title": "Start",
+          "type": "number"
+        },
+        "word": {
+          "title": "Word",
+          "type": "string"
+        }
+      },
+      "required": [
+        "word",
+        "start",
+        "end"
+      ],
+      "title": "Word",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Complete JSON batch document and on-disk JSON shape.",
+  "properties": {
+    "capabilities": {
+      "$ref": "#/$defs/Capabilities"
+    },
+    "code": {
+      "title": "Code",
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Error"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "input": {
+      "$ref": "#/$defs/AudioInput"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "transcribe",
+        "translate"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    },
+    "outputs": {
+      "$ref": "#/$defs/Outputs"
+    },
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "provider_meta": {
+      "additionalProperties": true,
+      "title": "Provider Meta",
+      "type": "object"
+    },
+    "request_id": {
+      "format": "uuid",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Result"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/Status"
+    },
+    "timing": {
+      "$ref": "#/$defs/Timing"
+    },
+    "tool_version": {
+      "default": "1.0.0",
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "$ref": "#/$defs/Warning"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "request_id",
+    "mode",
+    "status",
+    "code",
+    "message",
+    "provider",
+    "model",
+    "capabilities",
+    "input",
+    "outputs",
+    "timing"
+  ],
+  "title": "Envelope",
+  "type": "object"
+}
