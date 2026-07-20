@@ -1,0 +1,263 @@
+{
+  "$schema": "voice_note agent environment state",
+  "metadata": {
+    "version": "1.1.0",
+    "last_updated": "2026-07-19T00:00:00Z",
+    "last_validated_by": "sisyphus",
+    "update_trigger": "manual",
+    "authority_note": "Authoritative strategy/rules now live in AGENTS.md, MEMORY.md, docs/CONTRACT.md at repo root. This file is runtime environment state only."
+  },
+
+  "project": {
+    "name": "voice_note",
+    "version": "pre-v1.0",
+    "version_note": "v1.0 has not shipped. Ships when Stream A DoD passes (see docs/CONTRACT.md).",
+    "description": "Contract-first CLI for voice recording + transcription via cloud Whisper providers (Groq, modelos). Currently pre-contract; all output is human text.",
+    "repository": "/Users/fabiofalopes/projetos/hub/voice_note",
+    "authoritative_docs": {
+      "agent_rules": "AGENTS.md",
+      "state_and_history": "MEMORY.md",
+      "contract_spec": "docs/CONTRACT.md"
+    }
+  },
+
+  "runtime": {
+    "python_version": "3.14",
+    "platform": "darwin",
+    "os_version": "macOS",
+    "architecture": "arm64",
+    "venv_path": "venv/"
+  },
+
+  "audio_backends": {
+    "current_platform": "macos",
+    "available": {
+      "macos": {
+        "primary": "CoreAudio",
+        "interface": "PyAudio",
+        "pyaudio_version": "0.2.14",
+        "status": "active",
+        "notes": "Uses PortAudio C bindings via PyAudio"
+      },
+      "linux": {
+        "primary": "PipeWire",
+        "fallback": ["PulseAudio", "ALSA"],
+        "recommended_tool": "parecord",
+        "status": "not_applicable",
+        "notes": "parecord subprocess preferred over PyAudio on modern Linux"
+      },
+      "windows": {
+        "primary": "WASAPI",
+        "interface": "PyAudio",
+        "status": "untested",
+        "notes": "Experimental support"
+      }
+    }
+  },
+
+  "providers": {
+    "active": ["groq", "modelos"],
+    "dead_code_to_remove": ["fireworks"],
+    "details": {
+      "groq": {
+        "pattern": "custom_adapter",
+        "sdk": "native groq Python SDK",
+        "base_url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "models": ["whisper-large-v3", "whisper-large-v3-turbo", "distil-whisper-large-v3-en"],
+        "default_model": "whisper-large-v3",
+        "capabilities": {
+          "word_timestamps": true,
+          "segment_timestamps": true,
+          "language_detection": true,
+          "quality_metrics": true,
+          "speaker_diarization": false
+        },
+        "language_format": "English (full word — normalised to 'en' via langcodes)",
+        "extensions": "x_groq.id (preserved under provider_meta)",
+        "empirical_status": "verified_working (2026-07-18, HTTP 200 in 0.84s, all fields populated)",
+        "rationale": "Native SDK preserves precise 429 wait-time parser"
+      },
+      "modelos": {
+        "pattern": "openai_compat",
+        "sdk": "OpenAI SDK at custom base_url",
+        "base_url": "https://modelos.ai.ulusofona.pt/v1/audio/transcriptions",
+        "models": ["stt-large-v3-turbo"],
+        "default_model": "stt-large-v3-turbo",
+        "capabilities": {
+          "word_timestamps": false,
+          "segment_timestamps": true,
+          "language_detection": true,
+          "quality_metrics": false,
+          "speaker_diarization": false
+        },
+        "language_format": "en (ISO 639-1)",
+        "extensions": "none",
+        "empirical_status": "verified_working but quirky (2026-07-18): nulls 7/10 segment fields, end hallucination (30.19 on 2.28s audio), ignores word timestamp request",
+        "rationale": "Self-hosted LiteLLM gateway on user-controlled infrastructure"
+      },
+      "fireworks": {
+        "status": "dead_code",
+        "removal_stream": "Stream C",
+        "user_decision_date": "2026-07-18",
+        "note": "Never used in practice. Do NOT extend or fix bugs. Treat as already-deleted."
+      }
+    },
+    "default_provider": "groq"
+  },
+
+  "whisper_models": {
+    "_doc": "Backwards-compat section. See providers.details.<name>.models for canonical list.",
+    "default_model": "whisper-large-v3",
+    "constraints": {
+      "max_file_size_mb": 25,
+      "supported_formats": ["wav", "mp3", "m4a", "flac", "ogg", "webm"],
+      "rate_limit": "tier_dependent"
+    }
+  },
+
+  "dependencies": {
+    "installed": ["groq>=0.18.0", "openai>=1.0.0", "pyaudio>=0.2.14", "python-dotenv>=1.0.1", "pyperclip>=1.8.2"],
+    "stream_a_will_add": ["langcodes>=3.0", "pydantic>=2.0", "pytest>=8.0"]
+  },
+
+  "contract_status": {
+    "schema_version": "1.0",
+    "status": "not_yet_implemented",
+    "spec_location": "docs/CONTRACT.md",
+    "implementation_stream": "Stream A",
+    "blocking_prerequisites": [
+      "Pre-Stream-A Step 1: commit baseline (6 logical chunks)",
+      "Pre-Stream-A Step 2: write ~10 pytest tests"
+    ],
+    "current_stdout_surface": "human text via print() — no JSON, no NDJSON",
+    "current_exit_codes": "binary (0 success, 1 every error) — to be replaced with sysexits map in Stream A"
+  },
+
+  "known_issues": [
+    {
+      "id": "UNCOMMITTED_BASELINE",
+      "severity": "critical",
+      "description": "Entire provider-abstraction layer + robust_recorder + strategy docs uncommitted. 6 modified + 12+ untracked files. Blocks Stream A.",
+      "resolution": "Pre-Stream-A Step 1 — commit in 6 chunks",
+      "reference": "MEMORY.md §2.3"
+    },
+    {
+      "id": "NO_TESTS",
+      "severity": "critical",
+      "description": "No tests/ directory. Provider parsing unverified. Every refactor is unsafe.",
+      "resolution": "Pre-Stream-A Step 2 — write ~10 pytest tests",
+      "reference": "AGENTS.md §2 Pre-Stream-A Step 2"
+    },
+    {
+      "id": "CTRL_C_CORRUPTION",
+      "severity": "high",
+      "description": "Ctrl+C during recording can cause terminal corruption and file loss. PyAudio C extension blocks Python signal delivery. PortAudio modifies terminal settings. Nested exception handler creates signal shadow.",
+      "root_causes": [
+        "PyAudio C extension blocks Python signal delivery",
+        "PortAudio modifies terminal settings",
+        "Nested exception handler creates signal shadow"
+      ],
+      "status": "documented",
+      "resolution": "Stream D — apply recommendations from signal_handling_corruption_analysis.md",
+      "reference": "docs/reports/signal_handling_corruption_analysis.md"
+    },
+    {
+      "id": "ROBUST_NOT_DEFAULT",
+      "severity": "high",
+      "description": "Robust recorder (fault-tolerant, chunked) exists but is opt-in via --robust. Default is fragile in-RAM recorder. 15-month-old CRITICAL handoff open.",
+      "status": "open",
+      "resolution": "Stream D — flip default to robust=True, add --legacy opt-in",
+      "reference": ".HANDOFF_NEXT.md (2025-04-02)"
+    },
+    {
+      "id": "MODELOS_PARSER_BROKEN",
+      "severity": "high",
+      "description": "_parse_response uses float(getattr(seg, 'field', 0.0)) pattern. When attribute exists with null value, getattr returns null (not default), float(None) raises TypeError. Silence filter + low-confidence warnings non-functional on modelos.",
+      "status": "documented",
+      "resolution": "Stream A — replace with normaliser layer that preserves nulls per docs/CONTRACT.md §11.2",
+      "reference": "MEMORY.md §2.2, docs/CONTRACT.md §11"
+    },
+    {
+      "id": "FIREWORKS_DEAD_CODE",
+      "severity": "low",
+      "description": "src/api/fireworks_client.py (179 LOC) + FIREWORKS_API_KEY in .env.example + dispatcher entry. Never used.",
+      "status": "open",
+      "resolution": "Stream C — delete file, remove from .env.example, remove from dispatcher",
+      "reference": "AGENTS.md §4 Non-goals"
+    },
+    {
+      "id": "PIPEWIRE_ALSA_CONFLICT",
+      "severity": "medium",
+      "description": "PipeWire + ALSA conflict on some Ubuntu 22.04 LTS systems",
+      "platforms": ["linux"],
+      "status": "known",
+      "workaround": "Use parecord subprocess instead of PyAudio"
+    },
+    {
+      "id": "HEADLESS_CLIPBOARD",
+      "severity": "low",
+      "description": "Clipboard write fails silently on headless systems",
+      "platforms": ["linux"],
+      "status": "documented"
+    }
+  ],
+
+  "platform_behaviors": {
+    "macos": {
+      "audio_backend": "CoreAudio",
+      "signal_handling": "more_reliable",
+      "terminal_corruption": "rare",
+      "preferred_recording_method": "pyaudio"
+    },
+    "linux": {
+      "audio_backend": "PipeWire/PulseAudio/ALSA",
+      "signal_handling": "can_block_longer",
+      "terminal_corruption": "more_common",
+      "preferred_recording_method": "parecord_subprocess"
+    }
+  },
+
+  "agent_registry": {
+    "_note": "All agents predate the v1.0 master prompt split (2026-07-19). Each agent file has a 'defer to AGENTS.md' banner. Full resync deferred until Stream A starts.",
+    "environment-steward": {
+      "version": "1.0.0",
+      "purpose": "Refresh state file, validate environment",
+      "triggers_on": ["session_start", "version_change"],
+      "currency": "stale_logic_but_still_runs"
+    },
+    "audio-systems-architect": {
+      "version": "2.0.0",
+      "purpose": "Diagnose recording failures, optimize backend selection (Stream D aligned)",
+      "triggers_on": ["recording_errors", "platform_changes"],
+      "currency": "mostly_aligned_with_stream_D"
+    },
+    "groq-pipeline-validator": {
+      "version": "2.0.0",
+      "purpose": "Assess transcription quality, model selection",
+      "triggers_on": ["post_transcription", "user_feedback"],
+      "currency": "partially_stale_groq_only_no_modelos"
+    },
+    "robustness-engineer": {
+      "version": "2.0.0",
+      "purpose": "Identify edge cases before releases (read-only analysis)",
+      "triggers_on": ["pre_release", "major_changes"],
+      "currency": "redundant_overlaps_with_review_work_skill"
+    },
+    "integration-mapper": {
+      "version": "1.0.0",
+      "purpose": "Ensure compatibility with downstream tools (Stream F territory, deferred)",
+      "triggers_on": ["new_integration_requests"],
+      "currency": "premature_blocked_by_v1.0_ship"
+    }
+  },
+
+  "validation_checks": {
+    "last_run": "2026-07-19",
+    "checks": [
+      {"name": "python_version", "status": "pass", "expected": ">=3.11", "actual": "3.14"},
+      {"name": "pyaudio_installed", "status": "pass", "version": "0.2.14"},
+      {"name": "groq_api_key", "status": "check_env", "env_var": "GROQ_API_KEY"},
+      {"name": "modelos_api_key", "status": "check_env", "env_var": "MODELOS_API_KEY"}
+    ]
+  }
+}
