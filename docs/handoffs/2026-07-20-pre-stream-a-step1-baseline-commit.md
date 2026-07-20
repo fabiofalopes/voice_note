@@ -50,7 +50,7 @@ Working tree currently has 12 uncommitted entries (verify with `git status`).
 - `ROBUST_RECORDING.md`
 - `docs/reports/` (contains `signal_handling_corruption_analysis.md`)
 - `src/api/base_client.py` (the ABC, 579 LOC)
-- `src/api/fireworks_client.py` (179 LOC, **dead code — Stream C removes**)
+- `src/api/fireworks_client.py` (179 LOC, **dead code — since removed 2026-07-20**)
 - `src/api/modelos_client.py` (165 LOC)
 - `src/audio_processing/robust_recorder.py` (471 LOC)
 
@@ -64,7 +64,7 @@ Adapt if a cleaner grouping emerges from reading the code:
 | 2 | `pre-a(providers): commit BaseSTTClient ABC with shared chunked pipeline` | `src/api/base_client.py`, `src/api/__init__.py` |
 | 3 | `pre-a(groq): rewrite Groq client as BaseSTTClient subclass (Pattern 1)` | `src/api/groq_client.py` |
 | 4 | `pre-a(modelos): add modelos client (Pattern 2 OpenAI-compat)` | `src/api/modelos_client.py` |
-| 5 | `pre-a(fireworks): add Fireworks client (dead on arrival, Stream C removes)` | `src/api/fireworks_client.py` |
+| 5 | `pre-a(fireworks): add Fireworks client (dead on arrival, since removed 2026-07-20)` | `src/api/fireworks_client.py` |
 | 6 | `pre-a(cli+docs): wire provider dispatch + commit reliability + signal-handling docs` | `src/cli.py`, `src/config.py`, `.env.example`, `requirements.txt`, `ROBUST_RECORDING.md`, `docs/reports/` |
 
 ---

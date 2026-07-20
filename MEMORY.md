@@ -27,7 +27,7 @@ This conviction — contract-first — survived everything that followed. It is 
 
 3. **The "local" the user refers to is `https://modelos.ai.ulusofona.pt`** — a self-hosted LiteLLM gateway on user-controlled infrastructure, NOT on-device execution. Exposed via the `modelos` provider using the OpenAI SDK against a custom `base_url`. Treat as a remote OpenAI-compatible endpoint, not as "local".
 
-4. **Fireworks is dropped.** Added speculatively as an RPM-based complement to Groq's audio-seconds rate limit, but never used in practice. Stream C removes it. The architecture still supports adding any future OpenAI-compatible endpoint via config-only registration, so dropping Fireworks costs nothing in future flexibility.
+4. **Fireworks is dropped.** Added speculatively as an RPM-based complement to Groq's audio-seconds rate limit, but never used in practice. Dead code removed 2026-07-20. The architecture still supports adding any future OpenAI-compatible endpoint via config-only registration, so dropping Fireworks costs nothing in future flexibility.
 
 5. **The two real providers are Groq and modelos.** Both OpenAI-compatible Whisper endpoints. Groq integrated via its native Python SDK (Pattern 1, preserves the precise 429 wait-time parser); modelos integrated via OpenAI SDK at custom `base_url` (Pattern 2, canonical OpenAI-compat pattern).
 
@@ -45,7 +45,7 @@ v2.0–v2.3 transformed conviction into specification (789 lines of operational 
 
 ---
 
-## 2. Current state — verified snapshot (as of 2026-07-19)
+## 2. Current state — verified snapshot (as of 2026-07-20)
 
 Descriptive reality, not aspiration. Every claim grounded in code on disk.
 
@@ -57,7 +57,7 @@ Descriptive reality, not aspiration. Every claim grounded in code on disk.
 | CLI parser | `src/cli.py` | 283 | `argparse`, single command, ~14 flags, hardcoded `if/elif` provider dispatch (L16–33) |
 | Provider abstraction | `src/api/base_client.py` | 579 | **ABC with shared chunked pipeline** — chunking, ffmpeg extraction, partial-file crash-safety, prompt chaining, silence filter, low-confidence warnings, `.txt`/`.srt`/`.json` serialisation. Designed for two-pattern registry (Stream C). |
 | Provider hook | `BaseSTTClient._send_chunk()` | abstract | Subclasses implement only this + `_parse_response()` |
-| Concrete providers | `groq_client.py` (200), `modelos_client.py` (165), `fireworks_client.py` (179) | 544 total | **2 active providers + 1 dead.** Groq = native SDK custom adapter (Pattern 1). modelos = OpenAI SDK at custom `base_url` (Pattern 2). Fireworks = dead code, removed in Stream C. |
+| Concrete providers | `groq_client.py` (200), `modelos_client.py` (165) | 365 total | **2 active providers.** Groq = native SDK custom adapter (Pattern 1). modelos = OpenAI SDK at custom `base_url` (Pattern 2). Fireworks dead code removed 2026-07-20. |
 | Data types (proto-contract) | `Segment`, `ChunkResult`, `TranscriptionResult` in `base_client.py` L28–62 | — | Latent contract — id/start/end/text/avg_logprob/no_speech_prob/compression_ratio/tokens. Needs promotion to `src/contract.py`. |
 | Robust recorder | `src/audio_processing/robust_recorder.py` | 471 | Auto-chunking, device-failure recovery, WAV merge. **Opt-in** via `--robust`. |
 | Legacy recorder | `src/audio_processing/recorder.py` | 1029 | PyAudio + parecord (PipeWire/PulseAudio) auto-detection. Carries pre-existing LSP errors — documented tech debt, do not touch outside Stream D. |
@@ -76,11 +76,10 @@ Descriptive reality, not aspiration. Every claim grounded in code on disk.
 | **No packaging** | No `pyproject.toml`, no `setup.py`, no `[project.scripts]` | Forces `vn` shell alias; blocks `pipx install` / `uv tool install` |
 | **No tests** | No `tests/` directory; `find -name 'test_*.py'` finds only `venv/` and `node_modules/` hits | Every refactor is unsafe; provider parsing is unverified |
 | **Dead `src/config.py`** | Exports `get_groq_api_key()` etc.; **0 callers**. Clients call `os.getenv()` directly with redundant `load_dotenv()` | Confusing; violates single-source-of-truth |
-| **Hardcoded provider dispatch** | `cli.py` L16–33: `if/elif/elif/else` chain (still references Fireworks) | Adding a provider requires editing the dispatcher |
+| **Hardcoded provider dispatch** | `cli.py`: `if/elif/else` chain over the 2 providers | Adding a provider requires editing the dispatcher |
 | **`--robust` not default** | `cli.py` L162: `if args.robust:` (default `False`) | Every recording without the flag risks total data loss on device failure |
-| **Fireworks still present in tree** | `src/api/fireworks_client.py` (179 LOC), `FIREWORKS_API_KEY` in `.env.example`, choice in `cli.py` dispatcher | Dead code; never used; Stream C removes it |
 | **Ctrl+C corruption (unfixed)** | `docs/reports/signal_handling_corruption_analysis.md` recommendations not applied | Terminal state corruption + possible file truncation on interrupt |
-| **Provider parser assumes non-null quality fields** | `modelos_client._parse_response` L153–176 + `fireworks_client._parse_response` L146–172 use `float(getattr(seg, "field", 0.0))` — but `getattr` returns `None` when attribute exists with null value, and `float(None)` raises `TypeError` | Silence filter + low-confidence warnings silently broken on modelos + vLLM-derived providers |
+| **Provider parser assumes non-null quality fields** | `modelos_client._parse_response` L153–176 uses `float(getattr(seg, "field", 0.0))` — but `getattr` returns `None` when attribute exists with null value, and `float(None)` raises `TypeError` | Silence filter + low-confidence warnings silently broken on modelos + vLLM-derived providers |
 | **Segment timestamps per-chunk, not global** | ROADMAP "Known issues" | Multi-chunk SRT offsets drift |
 | **No structured logging** | `logging` module unused | All diagnostics go to stdout via `print()`, mixed with results |
 
@@ -135,7 +134,7 @@ blocks the project. The remaining hard prerequisite before Stream A is
 | 5 | Groq registration pattern | 2026-07-18 | Pattern 1 custom adapter (native SDK), preserves 429 wait-time parser. MLX will follow same pattern. |
 | 6 | `provider_meta` policy | 2026-07-18 | Opaque in v1.0. Promotion to typed field requires (a) 3+ provider implementations AND (b) demonstrated consumer need. |
 | 7 | Language normalisation library | 2026-07-18 | `langcodes` wrapped in `src/i18n.py::normalize_language()`. |
-| 8 | Fireworks | 2026-07-18 | Dropped. Never used. Stream C removes dead code. |
+| 8 | Fireworks | 2026-07-18 | Dropped. Never used. Dead code removed 2026-07-20. |
 | 9 | Groq API key (earlier 403) | 2026-07-18 | Stale key. Re-tested after user confirmed key in place: 0.84s, HTTP 200, all fields populated. Closed. |
 | 10 | Null handling | 2026-07-19 | Preserve nulls for quality fields (`avg_logprob`, `compression_ratio`, `no_speech_prob`). Documented defaults for structural fields (`id`, `seek`, `tokens`, `temperature`). Clamp `end` if hallucinated. |
 | 11 | Capabilities | 2026-07-19 | Declarative object per provider. Fail-fast (exit 64) on incompatible requests. No post-hoc warnings. |
@@ -189,13 +188,13 @@ Closes the 15-month-old CRITICAL handoff (`.HANDOFF_NEXT.md`, dated 2025-04-02).
 
 **DoD**: `pipx install .` puts `vn` on `$PATH`; `uv tool install . -e` works editable; shell alias deprecated.
 
-### Stream C — Provider registry & Fireworks removal (L3, deferred, depends on A)
+### Stream C — Provider registry (L3, deferred, depends on A)
 
 **Goal**: Replace `if/elif` dispatcher with self-registering provider map supporting two patterns:
 - **Pattern 1 — Custom adapter class** (Groq today, MLX future): native SDK or non-OpenAI APIs.
 - **Pattern 2 — OpenAI-compatible config-only** (modelos today, any future OpenAI-compat endpoint): 5 lines of TOML, no code.
 
-**Files**: `src/providers/registry.py`, `src/providers/openai_compat_client.py` (NEW); move `groq_client.py` to `src/providers/`; convert `modelos_client.py` to config entry; **DELETE** `fireworks_client.py`; **DELETE** `FIREWORKS_API_KEY` from `.env.example`.
+**Files**: `src/providers/registry.py`, `src/providers/openai_compat_client.py` (NEW); move `groq_client.py` to `src/providers/`; convert `modelos_client.py` to config entry. (Fireworks client + `FIREWORKS_API_KEY` already removed 2026-07-20 — no longer part of this stream.)
 
 ### Stream E — Local execution via MLX (L4, deferred, depends on C)
 
@@ -276,7 +275,6 @@ Every agent working on voice_note MUST consult this table before citing or actin
 | `future_features/analyzer_insights.md` + `future_features/prompts/` | Historical reference only — old LLM post-processing, removed |
 | `docs/development-notes.md` | Pre-dates robust recorder and multi-provider era; useful for archaeology only |
 | `.opencode/agent/legacy/OPTIMIZED_PROMPT.md` | Proposed agent renames + `PROJECT_STATE.md` creation — never executed; superseded by current `.opencode/agent/` setup + AGENTS.md/MEMORY.md |
-| `src/api/fireworks_client.py` | **To be deleted in Stream C.** User confirmed 2026-07-18 Fireworks will not be used. Do not extend, do not fix bugs in it; treat as already-dead code. |
 
 ---
 
@@ -303,7 +301,6 @@ Every agent working on voice_note MUST consult this table before citing or actin
 | `RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` | Valid for current opt-in `--robust` behaviour | **Partially active** — Stream D will rewrite |
 | `.HANDOFF_NEXT.md` | 15-month-old CRITICAL mandate | **Stale** — closes when Stream D lands |
 | `RELIABILITY_FIX.md`, `audio_optimization_plan.md`, `audio_preprocessing_research.md`, `voice_note_deep_research_prompts.md`, `FUTURE-automated-compression-feature.md`, `future_features/system_robustness_roadmap.md`, `future_features/analyzer_insights.md`, `docs/development-notes.md`, `.opencode/agent/legacy/OPTIMIZED_PROMPT.md` | Historical / abandoned | **Stale / abandoned** — do NOT act on without explicit user confirmation |
-| `src/api/fireworks_client.py` | Dead code | **To be deleted in Stream C** — do not extend or fix bugs |
 
 ---
 
@@ -319,7 +316,7 @@ This section records what was checked before v1.0 was finalised, so future agent
 | **modelos language format** | Direct SDK call | `language: "en"` (ISO 639-1 code) | 2026-07-18 |
 | **Groq endpoint** | Direct SDK call with 2.27s WAV, `timestamp_granularities=["segment","word"]` | ✅ **VERIFIED WORKING** (after user confirmed key in place). HTTP 200 in 0.84s. Top-level: `text, task, language, duration, words, segments, x_groq`. Per-segment: all 10 standard fields populated. Word-level works: `{'word': 'Okay.', 'start': 0.54, 'end': 2.06}` (no confidence field). `language: "English"` (normalised to `"en"` via `langcodes`). `x_groq.id` extension field present (preserved under `provider_meta`). | 2026-07-18 |
 | **Groq language format** | Direct SDK call | `language: "English"` (full word — normalised to `"en"`) | 2026-07-18 |
-| **Fireworks endpoint** | N/A — user decision 2026-07-18: Fireworks dropped from project | Skipped permanently. Will be removed in Stream C. | 2026-07-18 |
+| **Fireworks endpoint** | N/A — user decision 2026-07-18: Fireworks dropped from project | Skipped permanently. Dead code removed 2026-07-20. | 2026-07-18 |
 | **Whisper verbose_json canonical schema** | Librarian research across OpenAI/Groq/Fireworks/vLLM/mlx-whisper/WhisperX docs | Confirmed convergence matrix. Critical findings: vLLM nulls `no_speech_prob` always; modelos nulls even more fields; WhisperX has very different shape (loses `id`, `seek`, `tokens`, `temperature`); mlx-whisper near-identical to OpenAI; word confidence key differs (`probability` vs `score`); Groq word-mode-quiet-segments bug not reproduced in our test. | 2026-07-18 |
 | **Contract design review** | Oracle 12-dimension stress test | 3 critical fixes applied (exit code coverage, mode/kind discriminator, on-disk vs stdout shape unification). 9 minor fixes applied. | 2026-07-18 |
 | **External review** | Perplexity GPT-5.6 design review of 8 questions | Direction validated. 4 highest-priority contradictions resolved (see §3.2). 16 additional recommendations considered; 8 adopted. | 2026-07-18 |
@@ -347,6 +344,7 @@ This section records what was checked before v1.0 was finalised, so future agent
 | 2026-07-19 | master prompt v1 | Single 880-line master prompt created. Briefly authoritative. |
 | **2026-07-19** | **3-file split (this structure)** | **Master prompt split into `AGENTS.md` (rules), `MEMORY.md` (this file — state/history), `docs/CONTRACT.md` (spec). Cleaner separation of always-loaded rules from on-demand reference material. Adopted all prior resolutions. Test-first + commit-first enforced as AGENTS.md §2 hard prerequisites.** |
 | 2026-07-20 | pre-a baseline committed | 7 atomic `pre-a(...)` commits captured the previously uncommitted baseline: robust recorder, BaseSTTClient foundation, Groq, modelos, Fireworks dead-code baseline, CLI wiring, and reliability docs. Pre-Stream-A Step 1 is complete; Step 2 tests remain. |
+| 2026-07-20 | Fireworks removed | `fireworks_client.py`, the `FIREWORKS_API_KEY` entry in `.env.example`, and the `cli.py` dispatcher choice deleted per user decision (2026-07-18). Provider count is now 2 (Groq, modelos). Stream C scope reduced to the provider registry only. |
 
 ---
 

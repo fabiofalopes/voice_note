@@ -1,8 +1,8 @@
 {
   "$schema": "voice_note agent environment state",
   "metadata": {
-    "version": "1.1.0",
-    "last_updated": "2026-07-19T00:00:00Z",
+    "version": "1.1.1",
+    "last_updated": "2026-07-20T00:00:00Z",
     "last_validated_by": "sisyphus",
     "update_trigger": "manual",
     "authority_note": "Authoritative strategy/rules now live in AGENTS.md, MEMORY.md, docs/CONTRACT.md at repo root. This file is runtime environment state only."
@@ -57,7 +57,7 @@
 
   "providers": {
     "active": ["groq", "modelos"],
-    "dead_code_to_remove": ["fireworks"],
+    "removed": ["fireworks"],
     "details": {
       "groq": {
         "pattern": "custom_adapter",
@@ -96,10 +96,10 @@
         "rationale": "Self-hosted LiteLLM gateway on user-controlled infrastructure"
       },
       "fireworks": {
-        "status": "dead_code",
-        "removal_stream": "Stream C",
+        "status": "removed",
+        "removal_date": "2026-07-20",
         "user_decision_date": "2026-07-18",
-        "note": "Never used in practice. Do NOT extend or fix bugs. Treat as already-deleted."
+        "note": "Never used in practice. Dead code removed 2026-07-20 (client file, .env.example entry, dispatcher choice). Do NOT re-add."
       }
     },
     "default_provider": "groq"
@@ -181,9 +181,9 @@
       "id": "FIREWORKS_DEAD_CODE",
       "severity": "low",
       "description": "src/api/fireworks_client.py (179 LOC) + FIREWORKS_API_KEY in .env.example + dispatcher entry. Never used.",
-      "status": "open",
-      "resolution": "Stream C — delete file, remove from .env.example, remove from dispatcher",
-      "reference": "AGENTS.md §4 Non-goals"
+      "status": "resolved",
+      "resolution": "Removed 2026-07-20 — client file deleted, .env.example entry removed, dispatcher choice removed",
+      "reference": "AGENTS.md §5 Non-goals"
     },
     {
       "id": "PIPEWIRE_ALSA_CONFLICT",

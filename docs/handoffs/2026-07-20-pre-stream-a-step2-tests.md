@@ -148,7 +148,6 @@ Do not start Stream A early just because some tests already exist.
 - ❌ Start Stream A contract implementation
 - ❌ Refactor provider code beyond what is strictly necessary for importable/testable seams
 - ❌ Touch `recorder.py` or `utils.py` as cleanup work
-- ❌ Remove Fireworks in advance (Stream C)
 - ❌ Flip `--robust` default (Stream D)
 - ❌ Add packaging / `pyproject.toml` / installable CLI work (Stream B)
 - ❌ Start any UI or local MLX work (Streams F / E)

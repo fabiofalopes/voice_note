@@ -530,7 +530,6 @@ def normalize_language(raw: str | None) -> str | None:
 - Do NOT add new providers.
 - Do NOT refactor `recorder.py` or `utils.py` (pre-existing LSP errors are documented tech debt).
 - Do NOT implement the provider registry (Stream C) — keep the existing hardcoded dispatcher.
-- Do NOT remove Fireworks (Stream C removes it).
 
 ---
 

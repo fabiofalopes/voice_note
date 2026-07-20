@@ -45,7 +45,7 @@ test -f .env && echo ".env present"              # API keys available
 
 ### Pre-Stream A — Foundation (MUST complete first, hard prerequisite)
 
-**Step 1 — Commit baseline.** The entire provider-abstraction layer, the entire reliability layer, and all strategy docs are currently uncommitted. See [MEMORY.md §Current state → Uncommitted](./MEMORY.md#23-what-is-uncommitted-in-git-handle-with-care) for the exact file list. Commit in 6 logical chunks (recorder, BaseSTTClient, Groq, Fireworks, modelos, docs).
+**Step 1 — Commit baseline.** ✅ Completed 2026-07-20. The provider-abstraction layer, the reliability layer, and all strategy docs were committed in atomic `pre-a(...)` chunks — see [MEMORY.md §2.3 Baseline commit status](./MEMORY.md#23-baseline-commit-status) for the commit list. The Fireworks dead-code baseline committed there has since been removed (user decision 2026-07-18, removed 2026-07-20).
 
 **Step 2 — Write tests.** `pytest` infrastructure does not exist. Create it. ~10 tests minimum:
 - `tests/test_groq_parsing.py` — parse Groq response fixture, assert all fields populated
@@ -86,7 +86,6 @@ These tests are the executable spec for the contract. They must fail meaningfull
 - Do NOT add new providers.
 - Do NOT refactor `recorder.py` or `utils.py` (pre-existing LSP errors are documented tech debt).
 - Do NOT implement provider registry (Stream C). Keep existing hardcoded dispatcher.
-- Do NOT remove Fireworks (Stream C removes it).
 
 ### Stream D — Reliability flip (L0, parallel to A, optional for v1.0 ship)
 
@@ -132,7 +131,7 @@ Stream B (packaging)     Stream C (provider registry)     Stream D (reliability 
 **Out of scope for v1.0 ship. Refuse and cite this section if asked to do any of these:**
 
 - ❌ **Stream B / C / E / F** — see §2 above
-- ❌ **Fireworks** — dropped per user decision (2026-07-18). Never used. Stream C removes the dead code.
+- ❌ **Fireworks** — dropped per user decision (2026-07-18). Never used. Dead code removed 2026-07-20. Do not re-add.
 - ❌ **UI in v1.0** — hard gate. UI is NEVER started before contract v1.0 ships and is proven by at least one external consumer (a 50-line Python script driving `vn --ndjson` end-to-end counts).
 - ❌ **Backward compatibility escape hatch** — no `VN_LEGACY_OUTPUT=1` env var. Clean break. Document prominently in README.
 - ❌ **`field_status` provenance object** — simplified to null pass-through + documentation. The provenance object is over-engineering for a personal tool; null is already unambiguous.
@@ -194,7 +193,7 @@ Stream B (packaging)     Stream C (provider registry)     Stream D (reliability 
 
 **Examples:**
 - `pre-a(recorder): commit robust_recorder.py baseline`
-- `pre-a(providers): commit BaseSTTClient ABC + Groq + modelos + Fireworks`
+- `pre-a(providers): commit BaseSTTClient ABC + Groq + modelos`
 - `pre-a(tests): add pytest fixtures for Groq + modelos response parsing`
 - `contract(A): emit NDJSON events from base_client pipeline`
 - `contract(A): implement Pydantic v2 envelope + segment models`
