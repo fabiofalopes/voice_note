@@ -150,3 +150,11 @@ def register_builtins() -> None:
         reg.register("groq", GroqWhisperClient)
     if "modelos" not in reg._custom:
         reg.register("modelos", ModelosSTTClient)
+
+    try:
+        from providers.mlx_client import MLXClient
+
+        if "mlx" not in reg._custom:
+            reg.register("mlx", MLXClient)
+    except ImportError:
+        pass

@@ -21,6 +21,13 @@ dependencies = [
 dev = [
     "pytest>=8.0",
 ]
+mlx = [
+    "mlx-whisper>=0.4.0",
+]
+mlx-all = [
+    "mlx-whisper>=0.4.0",
+    "mlx-audio>=0.1.0",
+]
 
 [project.scripts]
 vn = "cli:main"

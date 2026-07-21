@@ -37,12 +37,12 @@ from emitter import (
 from providers.registry import ProviderNotFoundError
 
 
-def _build_client(provider: str, emitter: Emitter):
+def _build_client(provider: str, emitter: Emitter, **kwargs):
     """Instantiate the right STT client for the given provider name."""
     from providers.registry import get_registry
 
     cls = get_registry().get_class(provider)
-    return cls(emitter)
+    return cls(emitter, **kwargs)
 
 
 def main():
@@ -63,6 +63,11 @@ def main():
         "-p",
         default="groq",
         help="STT provider to use (default: groq)",
+    )
+    parser.add_argument(
+        "--backend",
+        default="whisper",
+        help="MLX backend for local inference: whisper, qwen3-asr, parakeet (default: whisper)",
     )
     parser.add_argument(
         "--model",
@@ -284,7 +289,10 @@ def main():
         return ExitCode.USAGE
 
     try:
-        client = _build_client(args.provider, emitter)
+        client_kwargs = {}
+        if args.provider == "mlx":
+            client_kwargs["backend"] = args.backend
+        client = _build_client(args.provider, emitter, **client_kwargs)
     except ProviderNotFoundError as e:
         _emit_failure(
             emitter, args, "PROVIDER_NOT_FOUND", "usage", str(e), started_at, audio_file
