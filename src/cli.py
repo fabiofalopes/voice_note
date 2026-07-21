@@ -34,23 +34,22 @@ from emitter import (
     PlainEmitter,
     envelope_payload,
 )
+from providers.registry import ProviderNotFoundError
 
 
 def _build_client(provider: str, emitter: Emitter):
     """Instantiate the right STT client for the given provider name."""
-    if provider == "groq":
-        from api.groq_client import GroqWhisperClient
+    from providers.registry import get_registry
 
-        return GroqWhisperClient(emitter)
-    elif provider == "modelos":
-        from api.modelos_client import ModelosSTTClient
-
-        return ModelosSTTClient(emitter)
-    else:
-        raise ValueError(f"Unknown provider: {provider!r}. Choose 'groq' or 'modelos'.")
+    cls = get_registry().get_class(provider)
+    return cls(emitter)
 
 
 def main():
+    from providers.registry import register_builtins
+
+    register_builtins()
+
     parser = argparse.ArgumentParser(
         description="Voice Transcriber — record and transcribe audio"
     )
@@ -62,7 +61,6 @@ def main():
     parser.add_argument(
         "--provider",
         "-p",
-        choices=["groq", "modelos"],
         default="groq",
         help="STT provider to use (default: groq)",
     )
@@ -123,6 +121,11 @@ def main():
         "--list-devices", action="store_true", help="List available audio devices"
     )
     parser.add_argument(
+        "--list-providers",
+        action="store_true",
+        help="List registered STT providers and their capabilities",
+    )
+    parser.add_argument(
         "--test-mic", action="store_true", help="Test microphone input levels"
     )
     parser.add_argument("--device", "-d", type=int, help="Audio input device index")
@@ -169,6 +172,16 @@ def main():
         except ImportError as e:
             emitter.error(_error_data("MISSING_DEPENDENCY", "dependency", str(e)))
             return 1
+        return 0
+
+    if args.list_providers:
+        from providers.registry import get_registry
+
+        for name, info in get_registry().list_providers().items():
+            caps = ", ".join(k for k, v in info.capabilities.items() if v) or "none"
+            print(
+                f"{name} ({info.pattern}) — models: {', '.join(info.models)} | capabilities: {caps}"
+            )
         return 0
 
     if args.test_mic:
@@ -249,7 +262,13 @@ def main():
             emitter.log(f"Final recording: {audio_file}")
 
     # Build STT client
-    provider_capabilities = _provider_capabilities(args.provider)
+    try:
+        provider_capabilities = _provider_capabilities(args.provider)
+    except ProviderNotFoundError as e:
+        _emit_failure(
+            emitter, args, "PROVIDER_NOT_FOUND", "usage", str(e), started_at, audio_file
+        )
+        return ExitCode.USAGE
     if args.word_timestamps and not provider_capabilities["word_timestamps"]:
         message = f"Provider '{args.provider}' does not support word timestamps"
         _emit_failure(
@@ -266,6 +285,11 @@ def main():
 
     try:
         client = _build_client(args.provider, emitter)
+    except ProviderNotFoundError as e:
+        _emit_failure(
+            emitter, args, "PROVIDER_NOT_FOUND", "usage", str(e), started_at, audio_file
+        )
+        return ExitCode.USAGE
     except (ValueError, ImportError) as e:
         code = "API_KEY_MISSING" if "KEY" in str(e).upper() else "MISSING_DEPENDENCY"
         category = "auth" if code == "API_KEY_MISSING" else "dependency"
@@ -466,13 +490,9 @@ def _build_emitter(args) -> Emitter:
 
 def _provider_capabilities(provider: str) -> dict[str, bool]:
     """Read provider capabilities without constructing an API client."""
-    if provider == "groq":
-        from api.groq_client import GroqWhisperClient
+    from providers.registry import get_registry
 
-        return GroqWhisperClient.CAPABILITIES
-    from api.modelos_client import ModelosSTTClient
-
-    return ModelosSTTClient.CAPABILITIES
+    return get_registry().get_capabilities(provider)
 
 
 def _error_data(
