@@ -242,7 +242,6 @@ class BaseSTTClient(ABC):
                 if chunk_result.detected_language:
                     detected_language = chunk_result.detected_language
                 provider_meta.update(chunk_result.provider_meta)
-                # Update rolling prompt for next chunk
                 prompt = self._build_prompt(chunk_result.text)
 
             if not accumulated_texts:
@@ -422,7 +421,6 @@ class BaseSTTClient(ABC):
                         chunk_num - 1,
                     )
 
-                # Filter: if all segments are silence, skip
                 if self._is_silent_chunk(result):
                     self.emitter.warning(
                         "SILENT_CHUNK_SKIPPED",
@@ -430,7 +428,6 @@ class BaseSTTClient(ABC):
                         chunk_num - 1,
                     )
                 else:
-                    # Warn on low confidence
                     if result.segments:
                         low_conf = [
                             s

@@ -37,11 +37,7 @@ MODELOS_AI_BASE_URL = "https://modelos.ai.ulusofona.pt/"
 
 
 class ModelosSTTClient(BaseSTTClient):
-    """
-    Modelos AI Whisper API client.
-
-    Uses the openai SDK pointed at Modelos AI's OpenAI-compatible endpoint.
-    """
+    """Modelos AI Whisper API client using the OpenAI-compatible endpoint."""
 
     PROVIDER_NAME = "modelos"
 
@@ -148,7 +144,6 @@ class ModelosSTTClient(BaseSTTClient):
     # -----------------------------------------------------------------------
 
     def _parse_response(self, raw, verbose: bool) -> ChunkResult:
-        """Convert raw Modelos/OpenAI API response to ChunkResult."""
         if not verbose:
             # response_format="text" → raw is a plain string (or object with .text)
             if isinstance(raw, str):
@@ -184,12 +179,10 @@ class ModelosSTTClient(BaseSTTClient):
 
 
 def _to_number(value) -> Optional[float]:
-    """Convert a provider value to float while preserving null."""
     return None if value is None else float(value)
 
 
 def _field_float(value, field_name: str) -> Optional[float]:
-    """Read one nullable numeric provider field."""
     return _to_number(getattr(value, field_name, None))
 
 

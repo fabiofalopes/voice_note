@@ -39,7 +39,7 @@ class RobustAudioRecorder:
     def __init__(
         self,
         output_dir="recordings",
-        chunk_minutes=5,  # Save every 5 minutes
+        chunk_minutes=5,
         device_index=None,
         format=pyaudio.paInt16,
         channels=1,
@@ -77,7 +77,6 @@ class RobustAudioRecorder:
         self._saved_termios = None
         self._cleaned_up = False
 
-        # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Setup signal handlers for graceful shutdown
@@ -93,7 +92,6 @@ class RobustAudioRecorder:
         self.recording = False
 
     def _get_chunk_filename(self, chunk_num):
-        """Generate filename for a chunk"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         return self.output_dir / f"recording_{timestamp}_chunk{chunk_num:03d}.wav"
 
@@ -238,7 +236,6 @@ class RobustAudioRecorder:
                     frame_count += 1
                     consecutive_errors = 0  # Reset on success
 
-                    # Visual progress indicator
                     if frame_count % 100 == 0:
                         elapsed = time.time() - start_time
                         progress = (frame_count / max_frames) * 100
@@ -284,11 +281,9 @@ class RobustAudioRecorder:
                         continue
 
                 except Exception as e:
-                    # Any other exception
                     error_msg = f"Recording error: {e}"
                     return frames, False, error_msg
 
-            # Chunk completed successfully
             elapsed = time.time() - start_time
             print(f"\n✅ Chunk {chunk_num} complete: {elapsed:.1f}s recorded")
             return frames, True, None
@@ -309,13 +304,11 @@ class RobustAudioRecorder:
         self.recording = True
         self.chunk_files = []
 
-        # Open audio stream
         self.stream = self._open_stream()
         if not self.stream:
             self.recording = False
             return []
 
-        # Calculate frames per chunk
         frames_per_chunk = int((self.chunk_minutes * 60 * self.rate) / self.chunk_size)
 
         # Calculate total chunks if max_duration specified
@@ -335,7 +328,6 @@ class RobustAudioRecorder:
 
         try:
             while self.recording and not self._shutdown_requested:
-                # Check if we've reached max duration
                 if max_chunks and chunk_num > max_chunks:
                     print(
                         f"\n✅ Reached maximum duration ({max_duration_minutes} minutes)"
@@ -345,7 +337,6 @@ class RobustAudioRecorder:
                 # Record one chunk
                 frames, success, error = self._record_chunk(chunk_num, frames_per_chunk)
 
-                # Save the chunk
                 if len(frames) > 0:
                     chunk_filename = self._get_chunk_filename(chunk_num)
                     saved_file = self._save_chunk(frames, chunk_filename)
@@ -353,7 +344,6 @@ class RobustAudioRecorder:
                         self.chunk_files.append(saved_file)
                         self.total_frames += len(frames)
 
-                # Handle errors
                 if not success:
                     print(f"\n⚠️  {error}")
                     if "Device disconnected" in error:
@@ -424,7 +414,6 @@ class RobustAudioRecorder:
         self._cleaned_up = True
 
     def stop(self):
-        """Stop recording"""
         self.recording = False
 
 
@@ -443,15 +432,12 @@ def merge_chunks(chunk_files, output_file):
     print(f"\n🔗 Merging {len(chunk_files)} chunks into {output_file}...")
 
     try:
-        # Get parameters from first file
         with wave.open(str(chunk_files[0]), "rb") as wf:
             params = wf.getparams()
 
-        # Create output file
         with wave.open(str(output_file), "wb") as outfile:
             outfile.setparams(params)
 
-            # Write all chunks
             for chunk_file in chunk_files:
                 with wave.open(str(chunk_file), "rb") as infile:
                     outfile.writeframes(infile.readframes(infile.getnframes()))

@@ -11,7 +11,6 @@ import os
 import json
 import time
 
-# Add src to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from contract import (
@@ -56,12 +55,10 @@ def main():
         description="Voice Transcriber — record and transcribe audio"
     )
 
-    # Positional
     parser.add_argument(
         "file", nargs="?", help="Audio file to transcribe (omit to record)"
     )
 
-    # Provider & model
     parser.add_argument(
         "--provider",
         "-p",
@@ -80,7 +77,6 @@ def main():
         ),
     )
 
-    # Transcription options
     parser.add_argument(
         "--language",
         "-l",
@@ -152,7 +148,6 @@ def main():
         help="Maximum recording duration in minutes",
     )
 
-    # Misc
     parser.add_argument(
         "--no-clipboard", action="store_true", help="Don't copy text to clipboard"
     )
@@ -165,9 +160,7 @@ def main():
     emitter = _build_emitter(args)
     started_at = time.monotonic()
 
-    # -----------------------------------------------------------------------
     # Device listing / mic test (no API needed)
-    # -----------------------------------------------------------------------
     if args.list_devices:
         try:
             from audio_processing.recorder import list_audio_devices
@@ -188,9 +181,7 @@ def main():
             emitter.error(_error_data("MISSING_DEPENDENCY", "dependency", str(e)))
             return 1
 
-    # -----------------------------------------------------------------------
     # Determine audio source
-    # -----------------------------------------------------------------------
     if args.file:
         if not os.path.exists(args.file):
             message = f"Audio file not found: {args.file}"
@@ -207,7 +198,6 @@ def main():
         audio_file = args.file
         emitter.log(f"Transcribing existing file: {audio_file}")
     else:
-        # Record new audio
         if args.legacy:
             print(
                 "⚠️  WARNING: --legacy uses the old recorder without device-failure recovery. "
@@ -215,7 +205,6 @@ def main():
                 file=sys.stderr,
             )
 
-            # Use standard recorder
             try:
                 from audio_processing.recorder import AudioRecorder
             except ImportError as e:
@@ -236,7 +225,6 @@ def main():
                 return 1
 
         else:
-            # Use robust recorder with auto-chunking and error recovery
             try:
                 from audio_processing.robust_recorder import record_robust
             except ImportError as e:
@@ -260,9 +248,7 @@ def main():
             audio_file = str(chunk_files[0])  # Use merged file
             emitter.log(f"Final recording: {audio_file}")
 
-    # -----------------------------------------------------------------------
     # Build STT client
-    # -----------------------------------------------------------------------
     provider_capabilities = _provider_capabilities(args.provider)
     if args.word_timestamps and not provider_capabilities["word_timestamps"]:
         message = f"Provider '{args.provider}' does not support word timestamps"
@@ -319,9 +305,7 @@ def main():
             f"Model '{args.model}' does not support translation; using {resolved_model}",
         )
 
-    # -----------------------------------------------------------------------
     # Transcribe / translate
-    # -----------------------------------------------------------------------
     action = "Translating" if args.translate else "Transcribing"
     emitter.log(f"{action} with provider={args.provider} ...")
 

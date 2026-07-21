@@ -114,7 +114,6 @@ class GroqWhisperClient(BaseSTTClient):
                 with open(chunk_file, "rb") as f:
                     data = f.read()
 
-                # Build kwargs — only include optional params when they have values
                 kwargs: dict = {
                     "file": (os.path.basename(chunk_file), data),
                     "model": model,
@@ -167,10 +166,8 @@ class GroqWhisperClient(BaseSTTClient):
     def _parse_response(self, raw, verbose: bool) -> ChunkResult:
         """Convert raw Groq API response to ChunkResult."""
         if not verbose:
-            # response_format="text" → raw is a plain string
             return ChunkResult(text=str(raw).strip())
 
-        # response_format="verbose_json" → raw is an object with attributes
         text = getattr(raw, "text", "") or ""
         detected_language = getattr(raw, "language", None)
         duration = getattr(raw, "duration", None)
@@ -216,12 +213,10 @@ class GroqWhisperClient(BaseSTTClient):
 
 
 def _to_number(value) -> Optional[float]:
-    """Convert a provider value to float while preserving null."""
     return None if value is None else float(value)
 
 
 def _field_float(value, field_name: str) -> Optional[float]:
-    """Read one nullable numeric provider field."""
     return _to_number(getattr(value, field_name, None))
 
 

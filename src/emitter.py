@@ -37,16 +37,13 @@ class Emitter(ABC):
             self._render_log(message)
 
     def start(self, data: dict[str, Any]) -> None:
-        """Emit the process-start event."""
         self._emit(EventType.START, "info", data)
 
     def segment(self, data: dict[str, Any]) -> None:
-        """Emit one canonical segment event."""
         self.segments_emitted += 1
         self._emit(EventType.SEGMENT, "info", data)
 
     def warning(self, code: str, detail: str, chunk_index: int | None = None) -> None:
-        """Record and emit a structured warning."""
         warning = Warning(code=code, detail=detail, chunk_index=chunk_index)
         self.warnings.append(warning)
         self._emit(
@@ -56,11 +53,9 @@ class Emitter(ABC):
         )
 
     def error(self, data: dict[str, Any]) -> None:
-        """Emit one structured fatal error event."""
         self._emit(EventType.ERROR, "error", data)
 
     def end(self, data: dict[str, Any]) -> None:
-        """Emit the final stream commit event exactly once."""
         if self.ended:
             return
         self._emit(EventType.END, "info", data)
