@@ -91,15 +91,15 @@ These tests are the executable spec for the contract. They must fail meaningfull
 - Do NOT refactor `recorder.py` or `utils.py` (pre-existing LSP errors are documented tech debt).
 - Do NOT implement provider registry (Stream C). Keep existing hardcoded dispatcher.
 
-### Stream D — Reliability flip (L0, parallel to A, optional for v1.0 ship)
+### Stream D — Reliability flip (✅ completed 2026-07-20)
 
 Closes the 15-month-old CRITICAL handoff. No `vn` invocation should be able to lose more than 5 minutes of audio to a device failure.
 
-**Files to touch:**
-- `src/cli.py` — flip default: `robust=True`. Add `--legacy` flag (opt-IN to old recorder, with stderr warning on every use).
-- `src/audio_processing/robust_recorder.py` — apply unfixed recommendations from `internal/reports/signal_handling_corruption_analysis.md`: explicit `signal.signal(SIGINT, …)` handler setting `_shutdown_requested` flag, atomic WAV writes (write-to-tmp + `os.replace`), terminal state save/restore around PyAudio sessions.
-- `.HANDOFF_NEXT.md` — mark CLOSED once default is flipped.
-- `internal/RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` — update to reflect "robust is now default; `--legacy` available".
+**Completed changes:**
+- `src/cli.py` — robust recorder is now the DEFAULT. `--legacy` flag opts into the old recorder with a stderr warning. `--robust` removed.
+- `src/audio_processing/robust_recorder.py` — applied Phase 1 fixes from `internal/reports/signal_handling_corruption_analysis.md`: `_shutdown_requested` flag pattern (async-signal-safe), atomic WAV writes (temp + fsync + `os.replace`), terminal state save/restore via `termios` around PyAudio sessions, idempotent `_cleanup` with `atexit` registration, bare `except:` → `except Exception:`.
+- `internal/.HANDOFF_NEXT.md` — marked CLOSED.
+- `internal/RELIABILITY_FIRST.md`, `ROBUST_RECORDING.md` — updated to reflect "robust is now default; `--legacy` available".
 
 **DoD:** See [MEMORY.md](./internal/MEMORY.md) or original Stream D spec.
 

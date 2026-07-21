@@ -1,6 +1,6 @@
 # 🎯 RELIABILITY FIRST - Core Project Principle
 
-> **⚠️ PARTIALLY DRIFTED (2026-07-19).** Core philosophy valid. Factual claim (robust is still opt-in, not default) is accurate. **However**: the urgency framing ("UNACCEPTABLE", top priority) is at odds with current sequencing — Stream A (output contract) is the v1.0 ship target, Stream D (reliability flip) is parallel/optional. See [`AGENTS.md`](../AGENTS.md) §3. References to `RELIABILITY_FIX.md` below are stale (that doc is itself historical).
+> **✅ MANDATE FULFILLED (2026-07-20, Stream D).** The robust recorder is now the DEFAULT. `--legacy` opts into the old recorder with a stderr warning. Signal handling, atomic WAV writes, and terminal state save/restore applied. The core philosophy below remains valid as project guidance. See [`AGENTS.md`](../AGENTS.md) §3 Stream D for the implementation record.
 
 ## The Non-Negotiable Standard
 

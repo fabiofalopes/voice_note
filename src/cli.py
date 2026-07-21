@@ -136,9 +136,9 @@ def main():
         help="Output WAV filename when recording (default: recording.wav)",
     )
     parser.add_argument(
-        "--robust",
+        "--legacy",
         action="store_true",
-        help="Use robust recorder (auto-chunking, device failure recovery)",
+        help="Use the legacy recorder instead of the robust recorder (not recommended)",
     )
     parser.add_argument(
         "--chunk-minutes",
@@ -208,7 +208,34 @@ def main():
         emitter.log(f"Transcribing existing file: {audio_file}")
     else:
         # Record new audio
-        if args.robust:
+        if args.legacy:
+            print(
+                "⚠️  WARNING: --legacy uses the old recorder without device-failure recovery. "
+                "Audio may be lost on device disconnection. Use the default robust recorder instead.",
+                file=sys.stderr,
+            )
+
+            # Use standard recorder
+            try:
+                from audio_processing.recorder import AudioRecorder
+            except ImportError as e:
+                emitter.error(_error_data("MISSING_DEPENDENCY", "dependency", str(e)))
+                return 1
+
+            recorder = AudioRecorder(device_index=args.device)
+            if not recorder.recording_method:
+                emitter.error(
+                    _error_data("NO_MIC", "recording", "No working microphone found")
+                )
+                return 1
+
+            emitter.log(recorder.get_recording_info())
+            audio_file = recorder.record_until_q(args.record_output)
+            if not audio_file:
+                emitter.error(_error_data("NO_MIC", "recording", "Recording failed"))
+                return 1
+
+        else:
             # Use robust recorder with auto-chunking and error recovery
             try:
                 from audio_processing.robust_recorder import record_robust
@@ -232,27 +259,6 @@ def main():
 
             audio_file = str(chunk_files[0])  # Use merged file
             emitter.log(f"Final recording: {audio_file}")
-
-        else:
-            # Use standard recorder
-            try:
-                from audio_processing.recorder import AudioRecorder
-            except ImportError as e:
-                emitter.error(_error_data("MISSING_DEPENDENCY", "dependency", str(e)))
-                return 1
-
-            recorder = AudioRecorder(device_index=args.device)
-            if not recorder.recording_method:
-                emitter.error(
-                    _error_data("NO_MIC", "recording", "No working microphone found")
-                )
-                return 1
-
-            emitter.log(recorder.get_recording_info())
-            audio_file = recorder.record_until_q(args.record_output)
-            if not audio_file:
-                emitter.error(_error_data("NO_MIC", "recording", "Recording failed"))
-                return 1
 
     # -----------------------------------------------------------------------
     # Build STT client
